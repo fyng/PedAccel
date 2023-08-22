@@ -90,3 +90,28 @@ my_plot <- ggplot(plot_data, aes(x = date_time, y = value, color = variable)) +
 
 # Save the plot as a PNG file
 ggsave("2023-24/plot2.png", plot = my_plot)
+
+# Load the data from the RDA file in the same folder as the script
+load("2023-24/stride_template.rda")
+
+# Check the structure of the loaded data
+str(stride_template)
+
+# Your data manipulation and plotting code
+plot_data <- data.frame(
+  x = rep(seq(0, 1, length.out = 200), 2),
+  y = c(stride_template$left_ankle[[2]][1, ],
+        stride_template$left_ankle[[2]][2, ]),
+  group = c(rep(1, 200), rep(2, 200)))
+
+# Create the ggplot plot
+my_plot <- ggplot(plot_data, aes(x = x, y = y, group = group)) + 
+  geom_line() +
+  facet_grid(group ~ .) + 
+  theme_bw(base_size = 9) + 
+  labs(x = "Time [s]", 
+       y = "Vector magnitude [g]", 
+       title = "Walking stride templates (left ankle)")
+
+# Save the plot as a PNG file
+ggsave("2023-24/plot3.png", plot = my_plot)
