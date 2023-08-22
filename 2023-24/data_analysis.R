@@ -36,7 +36,7 @@ my_plot <- ggplot(plot_data, aes(x = time_s, y = value, color = variable)) +
        title = "Raw accelerometry data of walking (100 Hz)")
 
 # Save the plot as a PNG file
-ggsave("my_plot.png", plot = my_plot)
+ggsave("2023-24/plot1.png", plot = my_plot)
 
 
 
