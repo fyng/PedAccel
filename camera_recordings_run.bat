@@ -1,2 +1,2 @@
 @ECHO OFF
-start python \\win.ad.jhu.edu\Users$\HOME\WINDOWS\uvdi\Desktop\PythonScript\camera1.py
+start python C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\Camera Code\camera1.py
