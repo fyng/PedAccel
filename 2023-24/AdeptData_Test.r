@@ -31,12 +31,3 @@ my_plot <- ggplot(plot_data, aes(x = time_s, y = value, color = variable)) +
 
 # Save the plot as a PNG file
 ggsave("2023-24plot3.png", plot = my_plot)
-
-
-
-library(adeptdata)
-library(dplyr)
-library(ggplot2)
-library(reshape2)
-library(lubridate)
-
