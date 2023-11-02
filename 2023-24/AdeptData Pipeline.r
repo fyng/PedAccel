@@ -1,6 +1,7 @@
 library(adeptdata)
 library(dplyr)
 library(ggplot2)
+library(ggplot)
 library(reshape2)
 library(lubridate)
 
@@ -16,4 +17,4 @@ accel_plot <- ggplot(data = accel, aes(x = Time_s, color = variable)) +
   labs(color = "Sensor Axis") +  # Customize the legend title here
   scale_color_manual(values = c("blue", "red", "green"),
                      labels = c("X", "Y", "Z"))
-ggsave("newplot2.png", plot = accel_plot)
+ggsave("newplot3.png", plot = accel_plot)

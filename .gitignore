@@ -133,3 +133,4 @@ dmypy.json
 
 # DO NOT PUSH
 DONOTPUSH/
+.Rproj.user
