@@ -12,13 +12,13 @@ file_path <- "Patient1_Data.csv"
 data <- read.csv(file_path) #, headers = TRUE, stringsAsFactors = FALSE)
 
 # Delete rows with junk information
-new_data <- data[-(1:10), ]
+data <- data[-(1:9), ]
 
 # Check the column names to ensure they match the expected names
 # colnames(new_data)
 
 # Check the structure of 'new_data'
-str(new_data)
+View(data)
 
 # Check the first few rows of 'new_data' to inspect the data
 # head(new_data, 6)
