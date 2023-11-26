@@ -15,6 +15,8 @@ is.data.frame(data)
 
 print(data$Timestamp)
 
+
+
 # ggplot(data, aes(Timestamp, Accelerometer.X)) + geom_line()
 
 ggplot(data, aes(x = Timestamp)) +
