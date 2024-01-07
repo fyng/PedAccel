@@ -8,6 +8,8 @@ import numpy as np
 import torch.optim as optim
 import seaborn as sns
 from sklearn import metrics
+from torch.utils.data.sampler import WeightedRandomSampler
+
 #%%
 class ordinal_regression(nn.Module):
     def __init__(self, ndim, ydim):
@@ -27,10 +29,9 @@ class ordinal_regression(nn.Module):
         with torch.no_grad():
             y_hat = self.w(X)
             y_hat = F.sigmoid(y_hat.repeat(1,self.ydim) + self.bias)
-            return y_hat.numpy()
-        
+            return y_hat.numpy()      
 #%%
-def training(model, X, y,max_iter):
+def training(model, X, y, samples_weight, max_iter):
     learning_rate = 0.0001
     epsilon = 1e-7
     criterion = torch.nn.BCELoss()
@@ -42,8 +43,11 @@ def training(model, X, y,max_iter):
     old_loss = 0
     for i in range(max_iter):
         opt_j.zero_grad() # Setting our stored gradients equal to zero
-        outputs = model(X_train)
-        loss_c = criterion(outputs, y_train) 
+        sampler = list(WeightedRandomSampler(samples_weight, len(samples_weight), replacement = True))
+        X_data = X_train[sampler, :]
+        y_data = y_train[sampler]
+        outputs = model(X_data)
+        loss_c = criterion(outputs, y_data) 
         loss_criterion.append(loss_c.detach().item())
         loss = loss_c
         loss.backward() # Computes the gradient of the given tensor w.r.t. the weights/bias
@@ -61,9 +65,16 @@ X_test = (loadmat('fold1.mat')['X_test'])
 y_test = (loadmat('fold1.mat')['y_test'])
 y_test = y_test.sum(axis = 1)
 # %%
+y_train_label = y_train.sum(axis = 1)
+class_sample_count = np.array([len(np.where(y_train_label==t)[0]) for t in np.unique(y_train_label)])
+weight = 1. / class_sample_count
+samples_weight = np.array([weight[t] for t in y_train_label])
+samples_weight = torch.from_numpy(samples_weight)
+
+# %%
 # training
 model = ordinal_regression(X_train.shape[1], y_train.shape[1])
-loss_c, loss_s,weights = training(model, X_train.astype('double'), y_train.astype('int16'),  10000)
+loss_c, loss_s,weights = training(model, X_train.astype('double'), y_train.astype('int16'), samples_weight,  10000)
 importance = weights
 
 # %%
@@ -85,7 +96,7 @@ with torch.no_grad():
     Y_PRED = y_te
 
 # %%
-sns.heatmap(metrics.confusion_matrix(Y, Y_PRED))
+sns.heatmap(metrics.confusion_matrix(Y, Y_PRED), annot = True)
 # %%
 sns.scatterplot(importance.ravel())
 # %%
