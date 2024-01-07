@@ -1,4 +1,4 @@
-#%%
+# %%
 from scipy.io import loadmat, savemat
 import torch
 import torch.nn as nn
@@ -6,29 +6,27 @@ import torch.nn.functional as F
 import seaborn as sns
 import numpy as np
 import torch.optim as optim
-from sklearn import preprocessing
-import itertools
-import tsfel
-
-
+import seaborn as sns
+from sklearn import metrics
 #%%
 class ordinal_regression(nn.Module):
     def __init__(self, ndim, ydim):
         super(ordinal_regression, self).__init__()
-        self.w = self.w = nn.Linear(ndim, 1, bias=False)
+        self.w = nn.Linear(ndim, 1, bias=False)
         self.bias = nn.Parameter(torch.zeros((1, ydim)))
+        self.ydim = ydim
    
     def forward(self, X):
         X = torch.tensor(X, dtype=torch.float32)
         y_hat = self.w(X)
-        y_hat = F.sigmoid(y_hat.repeat(1,4) + self.bias)
+        y_hat = F.sigmoid(y_hat.repeat(1,self.ydim) + self.bias)
         return y_hat
    
     def predict(self, X):
         X = torch.tensor(X, dtype=torch.float32)
         with torch.no_grad():
             y_hat = self.w(X)
-            y_hat = F.sigmoid(y_hat.repeat(1,4) + self.bias)
+            y_hat = F.sigmoid(y_hat.repeat(1,self.ydim) + self.bias)
             return y_hat.numpy()
         
 #%%
@@ -56,45 +54,38 @@ def training(model, X, y,max_iter):
         
     return loss_criterion, loss_sparsity, model.w.weight.detach().numpy()
 
-#%%
-def ordinal_labels(y, num_classes = None):
-    if not num_classes:
-        num_classes = np.max(y) + 1
-    range_values = np.arange(num_classes - 1)[None, :]
-    print(range_values.shape)
-    range_values = np.tile(range_values, [y.shape[0], 1])
-    print(range_values.shape)
-    ordinal_label = np.where(range_values < y, 1, 0)
-    return ordinal_label
 # %%
-X_train = loadmat('../DONOTPUSH/data.mat')['X_train']
-y_train = np.round(loadmat('../DONOTPUSH/data.mat')['y_train'] + 3)  
-X_test = loadmat('../DONOTPUSH/data.mat')['X_test']   
-y_test = np.round(loadmat('../DONOTPUSH/data.mat')['y_test'] + 3)
+X_train = (loadmat('fold1.mat')['X_train'])
+y_train = (loadmat('fold1.mat')['y_train']) 
+X_test = (loadmat('fold1.mat')['X_test'])  
+y_test = (loadmat('fold1.mat')['y_test'])
+y_test = y_test.sum(axis = 1)
 # %%
-sns.histplot(y_test.ravel())
-sns.histplot(y_train.ravel())
-# %%
-# tsfel (https://tsfel.readthedocs.io/en/latest/)
-cfg_file = tsfel.get_features_by_domain()
-fs = 1/60
+# training
+model = ordinal_regression(X_train.shape[1], y_train.shape[1])
+loss_c, loss_s,weights = training(model, X_train.astype('double'), y_train.astype('int16'),  10000)
+importance = weights
 
 # %%
-x_train_data = np.concatenate([np.vstack([tsfel.time_series_features_extractor(cfg_file, X_train[i, k, :], fs = fs, verbose = 0).to_numpy() for i in range(X_train.shape[0])])[:, :, None] for k in range(X_train.shape[1])], axis = 2)
-x_test_data = np.concatenate([np.vstack([tsfel.time_series_features_extractor(cfg_file, X_test[i, k, :], fs = fs, verbose = 0).to_numpy() for i in range(X_test.shape[0])])[:, :, None] for k in range(X_test.shape[1])], axis = 2)
+with torch.no_grad():
+    y_prob_fixed = model(torch.Tensor(X_test))
+    #Y_hat = (cpu(y_j_hat).data.numpy()> ordinal_thres).cumprod(axis = 1).sum(axis = 1)
+    y_te = (y_prob_fixed.detach().numpy() > 0.5).cumprod(axis = 1).sum(axis = 1)
+    y_te[y_te < 0] = 0
+    f1 = metrics.f1_score(y_test, y_te, average='macro')
+    accuracy = metrics.accuracy_score(y_test, y_te)
+    kappa = metrics.cohen_kappa_score(y_test, y_te)
+    sensitivity = metrics.recall_score(y_test, y_te, average='macro')
+    specs = []
+    for i in range(1, 4):
+        prec, recall,_, _ = metrics.precision_recall_fscore_support(y_test==i, y_te==i, pos_label=True, average=None)
+        specs.append(recall[0])
+    specificity = sum(specs)/len(specs)
+    Y = y_test
+    Y_PRED = y_te
 
 # %%
-y_train_data = ordinal_labels(y_train.reshape(-1, 1), 6)
-y_test_data = ordinal_labels(y_test.reshape(-1, 1), 6)
+sns.heatmap(metrics.confusion_matrix(Y, Y_PRED))
 # %%
-x_train_data = x_train_data.reshape(x_train_data.shape[0], -1)
-x_test_data = x_test_data.reshape(x_test_data.shape[0], -1)
-# %%
-# normalizing input features
-scaler = preprocessing.StandardScaler()
-x_train_data = scaler.fit_transform(x_train_data)
-x_test_data = scaler.transform(x_test_data)
-# %%
-filename = "fold1.mat"
-savemat(filename, {'X_train':x_train_data, 'y_train':y_train_data, 'X_test':x_test_data, 'y_test':y_test_data})
+sns.scatterplot(importance.ravel())
 # %%
