@@ -36,7 +36,7 @@ def create_ENMO_Column(myData):
     myData['ENMO'] = ENMO
 
 def create_absMag_Column(myData):
-    VecMag = (((myData["X"]) ** 2) + ((myData["Y"]) ** 2) + ((myData["Z"]) ** 2))
+    VecMag = np.sqrt((((myData["X"]) ** 2) + ((myData["Y"]) ** 2) + ((myData["Z"]) ** 2)))
     myData['VecMag'] = VecMag
 
 #Plot Two columns of Data
