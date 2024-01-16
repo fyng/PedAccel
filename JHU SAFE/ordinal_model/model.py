@@ -44,8 +44,10 @@ def training(model, X, y, samples_weight, max_iter):
     for i in range(max_iter):
         opt_j.zero_grad() # Setting our stored gradients equal to zero
         sampler = list(WeightedRandomSampler(samples_weight, len(samples_weight), replacement = True))
-        X_data = X_train[sampler, :]
-        y_data = y_train[sampler]
+        # X_data = X_train[sampler, :]
+        # y_data = y_train[sampler]
+        X_data = X_train
+        y_data = y_train
         outputs = model(X_data)
         loss_c = criterion(outputs, y_data) 
         loss_criterion.append(loss_c.detach().item())
