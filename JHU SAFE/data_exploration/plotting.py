@@ -1,13 +1,11 @@
 #%%
-
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
 import pyarrow as pa
 import seaborn as sns
 from datetime import timedelta, datetime
-import torch
-import pandas as pd
 
 dir = Path(r"S:\Fackler_OSS_364376\data\IRB-364376-v1-230215")
 # %%
@@ -147,26 +145,15 @@ for p in patients:
     )
     # preserve vitals timestamps while adding SBS where available
     patient_multi = pd.merge(left=vitals, right=sbs_p, left_index=True, right_index=True, how='left')
-    patient_multi = patient_multi.set_index(pd.Series(patient_multi.index).dt.round('T').astype('int64')//10**9//60)
     limit = 5000
-    hr4 = 360
-    j = 0
+
     if np.any(np.abs(patient_multi['SBS']) >= 2):
         y_data = patient_multi['SBS']
         X_data = patient_multi.drop(columns=['SBS'], axis = 1)
-        y_has_data = np.nonzero(y_data.isnull() == False)[0]
-        change_points = np.nonzero(np.diff(y_has_data) > limit)[0]
-        starts = []
-        ends = []
-        starts.append(y_has_data[0] - hr4)
-        for index in change_points:
-            ends.append(y_has_data[index] + hr4)
-            starts.append(y_has_data[index + 1] - hr4)
-        ends.append(y_has_data[-1] + hr4)
-         
-        for start, end in zip(starts, ends):
-            start = 0 if start < 0 else start
-            end = X_data.shape[0] if end > X_data.shape[0] else end
+        j = 0
+        l = X_data.shape[0]
+        while l > 0:
+            end = limit if l > limit else l
             fig, axs = plt.subplots(2, 2, sharex=True, sharey=False, figsize=(11, 8))
             labels = ['HR', 'PVC', 'RR', 'SPO2-%']
 
@@ -175,7 +162,7 @@ for p in patients:
                 ax.set_xlabel('time (min)')
                 ax.set_ylabel(labels[i], color=color)
                 ax.margins(0.1, 0.1)
-                ax.plot(X_data[labels[i]][start:end].to_numpy(), 'r', label=labels[i])
+                ax.plot(X_data[labels[i]][:end].to_numpy(), 'r', label=labels[i])
                 ax.tick_params(axis='y', labelcolor=color)
 
                 ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
@@ -183,21 +170,21 @@ for p in patients:
                 color = 'tab:blue'
                 ax2.set_ylabel('SBS', color=color)  # we already handled the x-label with ax1
                 ax2.margins(0.1, 0.1)
-                ax2.plot(y_data[start:end].to_numpy(), 'bo', markersize = 5, label='SBS')
+                ax2.plot(y_data[:end].to_numpy(), 'bo', markersize = 5, label='SBS')
                 ax2.tick_params(axis='y', labelcolor=color)      
                 
                 
                 ax.set_title(labels[i])
             
-            fn = "images_sbs/patient" + str(ctr) + "_" + str(j) + ".png"
+            fn = "images_highres/patient" + str(ctr) + "_" + str(j) + ".png"
             fig.tight_layout()  # otherwise the right y-label is slightly clipped
             fig.savefig(fn)
             plt.close(fig)
+            X_data = X_data[end:]  
+            y_data = y_data[end:]
             j += 1
+            l = X_data.shape[0]
         
     ctr += 1
-    if ctr > 200:
-        break
-    
 
 # %%
