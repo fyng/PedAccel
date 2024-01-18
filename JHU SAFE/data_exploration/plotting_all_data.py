@@ -47,7 +47,7 @@ sbs['recorded_time'] = pd.to_datetime(sbs['recorded_time'], format='%Y-%m-%d %H:
 sbs_indiv = sbs.groupby('pat_enc_csn_sid')
 
 # load pre-selected patients from patient_inclexcl.ipynb
-patients = np.load('./DONOTPUSH/patients_wodrugs.npy', allow_pickle=True)
+patients = np.load('../DONOTPUSH/patients_wodrugs.npy', allow_pickle=True)
 # %%
 fp_hl7m = dir.joinpath('ptsd-phi', 'vitals-hl7m', "003", '1000000003-2016-07-07-0.0166667-1-HL7M.feather')
 fp_tsdb = dir.joinpath('ptsd-phi', 'vitals-tsdb', "106", '1000002106-2019-01-22-1-TSDB.feather')
@@ -78,18 +78,6 @@ import warnings
 warnings.filterwarnings("ignore")
 pd.options.mode.chained_assignment = None  # default='warn'
 
-# vitals data
-X = []
-X_train = []
-X_test = []
-id_train = []
-# sbs scores
-y = []
-y_train = []
-y_test = []
-id_test = []
-# record patient id for stratification
-ids = []
 ctr = 1
 #%%
 for p in patients:
@@ -157,40 +145,46 @@ for p in patients:
     )
     # preserve vitals timestamps while adding SBS where available
     patient_multi = pd.merge(left=vitals, right=sbs_p, left_index=True, right_index=True, how='left')
-    
+    limit = 5000
 
-    for i in np.argwhere(~np.isnan(patient_multi['SBS'].tolist())):
-        idx = i[0]
-        if idx > 29:
-            end = patient_multi.index[idx]
-            start = end-timedelta(seconds=30*60)
-            dat = patient_multi.loc[start:end, :]
-            X_data = dat.drop(columns=['SBS']).to_numpy()
-            y_data = patient_multi['SBS'][idx]
-            if not np.any(np.isnan(X_data) > 0):
-                X.append(X_data)
-                y.append(y_data)
-                ids.append(p)
-                # print(X, y)
-                if ctr < 330: 
-                    X_train.append(X_data)
-                    y_train.append(y_data)
-                    id_train.append(p)
-                else:
-                    X_test.append(X_data)
-                    y_test.append(y_data)
-                    id_test.append(p)
+    if np.any(np.abs(patient_multi['SBS']) >= 2):
+        y_data = patient_multi['SBS']
+        X_data = patient_multi.drop(columns=['SBS'], axis = 1)
+        j = 0
+        l = X_data.shape[0]
+        while l > 0:
+            end = limit if l > limit else l
+            fig, axs = plt.subplots(2, 2, sharex=True, sharey=False, figsize=(11, 8))
+            labels = ['HR', 'PVC', 'RR', 'SPO2-%']
+
+            for i, ax in enumerate(axs.flatten()):  
+                color = 'tab:red'
+                ax.set_xlabel('time (min)')
+                ax.set_ylabel(labels[i], color=color)
+                ax.margins(0.1, 0.1)
+                ax.plot(X_data[labels[i]][:end].to_numpy(), 'r', label=labels[i])
+                ax.tick_params(axis='y', labelcolor=color)
+
+                ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
+
+                color = 'tab:blue'
+                ax2.set_ylabel('SBS', color=color)  # we already handled the x-label with ax1
+                ax2.margins(0.1, 0.1)
+                ax2.plot(y_data[:end].to_numpy(), 'bo', markersize = 5, label='SBS')
+                ax2.tick_params(axis='y', labelcolor=color)      
+                
+                
+                ax.set_title(labels[i])
             
-
+            fn = "images_highres/patient" + str(ctr) + "_" + str(j) + ".png"
+            fig.tight_layout()  # otherwise the right y-label is slightly clipped
+            fig.savefig(fn)
+            plt.close(fig)
+            X_data = X_data[end:]  
+            y_data = y_data[end:]
+            j += 1
+            l = X_data.shape[0]
+        
     ctr += 1
 
-#%%
-X = np.array(X)
-y = np.array(y)
-X_train = np.array(X_train)
-y_train = np.array(y_train)
-X_test = np.array(X_test)
-y_test = np.array(y_test)
-ids = np.array(ids)
-id_train = np.array(id_train)
-id_test = np.array(id_test)
+# %%
