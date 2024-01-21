@@ -22,7 +22,7 @@ def butter_bandpass(lowcut, highcut, sr, order=20):
     sos = butter(order, [low, high], analog=False, btype='band', output='sos')
     return sos
 
-def butter_bandpass_filter(myData, data, lowcut, highcut, sr=100, order=5):
+def butter_bandpass_filter(data, lowcut, highcut, sr=100, order=5):
     """
     :param myData: Current Pandas Data Frame
     :param data: Column of data to filter
@@ -33,8 +33,8 @@ def butter_bandpass_filter(myData, data, lowcut, highcut, sr=100, order=5):
     :return: updates column in myData with filtered data
     """
     sos = butter_bandpass(lowcut, highcut, sr, order=order)
-    myData['Butter_Bandpass_Data'] = sosfilt(sos, data)
-
+    #myData['Butter_Bandpass_Data'] = sosfilt(sos, data)
+    return sosfilt(sos, data)
 def FFT(y,sr=100,lower_freq=0, upper_freq=20, lower_cutoff=40, upper_cutoff=10000,title='FFT Plot'):
     """
     :param myData: gt3x file containing accelerometry data

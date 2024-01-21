@@ -7,6 +7,13 @@ from scipy.fft import irfft
 import scaleogram as scg
 import pywt #installed package name is pywavelets
 import pykalman as KalmanFilter
+import math
+from statsmodels.nonparametric.kernel_regression import KernelReg
+
+def simple_ks(y,x):
+    kr = KernelReg(y, x, "c")
+    y_pred, y_std = kr.fit(x)
+    return y_pred
 
 def moving_average(myData, y, w):
     """
@@ -113,3 +120,10 @@ def kalman_filter(df,y_name):
     ax.set_xlabel("Time")
     ax.set_ylabel("Value")
     plt.show()
+
+
+def threshold_array(arr):
+    # Create a new array with values set to 1 where conditions are met
+    new_array = np.where((arr < 1.1) & (arr > 0.9), 1, arr)
+
+    return new_array
