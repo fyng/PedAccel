@@ -45,4 +45,9 @@ def MAD(sliced_data,wlen = 100):
     arr[0:, 1] = sliced_data['Y']
     arr[0:, 2] = sliced_data['Z']
     accel = arr
-    return skdh.activity.metric_mad(accel, wlen)
+    MAD = skdh.activity.metric_mad(accel, wlen)
+    myX = []
+    for i in range(len(MAD)):
+        myX.append(i)
+    return myX, MAD
+
