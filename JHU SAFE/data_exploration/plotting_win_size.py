@@ -161,47 +161,72 @@ for p in patients:
         labels = ['HR', 'PVC', 'RR', 'SPO2-%']
 
         win_size_dict = {'x_data':[], 'sbs_data':[], 'win_size_data':[], 'label_data':[], 'one_sided':[]}
-
+        
         for a, b in zip(win_size_a, win_size_b):
             starts = []
             ends = []
-            starts.append(y_has_data[0] + a)
             for index in y_has_data:
-                ends.append(index + b)
                 starts.append(index + a)
-            ends.append(y_has_data[-1] + b)
+                ends.append(index + b)
 
-            for start, end in zip(starts, ends):
-                start = 0 if start < 0 else start
-                end = X_data.shape[0] if end > X_data.shape[0] else end
-                
-                for l in labels:
+            for l in labels:
+                win_size_dict['sbs_data'] += (y_data.dropna().tolist())
+                for start, end in zip(starts, ends):
+                    start = 0 if start < 0 else start
+                    end = X_data.shape[0] if end > X_data.shape[0] else end
                     x_t = X_data[l][start:end]
-                    
                     win_size_dict['x_data'].append(np.max(x_t)-np.min(x_t))
-                    win_size_dict['sbs_data'].append(y_data[start:end].dropna().iloc[0])
                     win_size_dict['win_size_data'].append(abs(a))
                     win_size_dict['label_data'].append(l)
                     win_size_dict['one_sided'].append(b == 1)
         
         win_size = pd.DataFrame(win_size_dict)
-               
+        win_size = win_size.dropna(axis=0)
+
+        corr = dict([(l, np.empty((len(win_size_a)//2, 2))) for l in labels])
+        
         fig, axs = plt.subplots(2, 2, sharex=True, sharey=False, figsize=(11, 8))
         
         for i, ax in enumerate(axs.flatten()):  
-            sns.scatterplot(legend = False, data=win_size[win_size['label_data']==labels[i]], x='x_data', y='sbs_data', hue='one_sided', size='win_size_data',ax=ax)
-            ax.set_ylabel('SBS')
+            sns.scatterplot(legend = False, data=win_size[win_size['label_data']==labels[i]], \
+                x='sbs_data', y='x_data', hue='one_sided', size='win_size_data',ax=ax, alpha=0.5, marker='$\circ$')
+            ax.set_xlabel('SBS')
             ax.margins(0.1, 0.1)
-            ax.set_xlabel(labels[i])  # we already handled the x-label with ax1
+            ax.set_ylabel(labels[i])  # we already handled the x-label with ax1
+            ax.set_title(labels[i])
+            k = 0
+            for a, b in zip(win_size_a, win_size_b):
+                conditions = (win_size['label_data']==labels[i]) & (win_size['win_size_data'] == abs(a)) & (win_size['one_sided'] == (b==1))
+                x_ = win_size[conditions]['x_data'].to_numpy()
+                y_ = win_size[conditions]['sbs_data'].to_numpy()
+                
+                if not b == 1:
+                    corr[labels[i]][k][0] = np.corrcoef(x_, y_)[0][1]
+                else:
+                    corr[labels[i]][k][1] = np.corrcoef(x_, y_)[0][1]
+                
+                k += 1
+                k = k % (len(win_size_a)//2)
+        
+        fn = "images_win_size/patient" + str(ctr) + "_" + str(j) + ".png"
+        fig.tight_layout()  # otherwise the right y-label is slightly clipped
+        fig.savefig(fn)
+        plt.close(fig)
+
+        j += 1 
+
+        fig, axs = plt.subplots(2, 2, sharex=True, sharey=False, figsize=(11, 8))
+        
+        for i, ax in enumerate(axs.flatten()): 
+            sns.heatmap(corr[labels[i]], ax=ax, xticklabels=['double', 'single'], \
+                yticklabels=win_size_b[:corr[labels[i]].shape[0]], annot=True)  
             ax.set_title(labels[i])
         
         fn = "images_win_size/patient" + str(ctr) + "_" + str(j) + ".png"
         fig.tight_layout()  # otherwise the right y-label is slightly clipped
-        plt.show()
-        break
         fig.savefig(fn)
         plt.close(fig)
-        j += 1    
+
     ctr += 1
     
 
