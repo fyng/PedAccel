@@ -57,21 +57,3 @@ def plot_Data(myData,xData_name,yData_name,title='Raw Data'):
     plt.ylabel("Vector Magnitude")
     plt.title(title)
     plt.show()
-
-#Slice Data Function--> Ignore and do not use for now
-def Sliced_data(myData, video_one, video_two,start_time_difference, sr=100, cam_start_time_is_larger=True):
-    """
-           This Function Creates a sliced data frame
-           :param myData: gt3x file containing accelerometry data
-           :param lower_bound: first video number
-           :param upper_bound: last video number
-           :return: Updated Data Frame that is sliced from the first video number to the last video number
-    """
-    if cam_start_time_is_larger:
-        lower_bound = ((video_one-1) * 10*60*sr) - (start_time_difference*sr)
-        upper_bound = ((video_two-1) * 10 * 60 *sr) - (start_time_difference*sr)
-    else:
-        lower_bound = ((video_one - 1) * 10 * 60 * sr) + (start_time_difference*sr)
-        upper_bound = ((video_two - 1) * 10 * 60 * sr) + (start_time_difference*sr)
-    return myData.iloc[lower_bound:upper_bound]
-
