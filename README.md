@@ -9,6 +9,6 @@ To install `PedAccel`:
 ```
 git clone https://github.com/fyng/PedAccel.git
 cd PedAccel
-micromamba env create -n newenv -f environment.yaml
+micromamba env create -f environment.yaml
 ```
 
