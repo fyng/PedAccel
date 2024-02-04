@@ -8,6 +8,11 @@ import xarray as xr
 import datashader as ds
 import datashader.transfer_functions as tf
 
+'''
+This file contains functions for calculating ENMO, Vector Magnitude, and Data Plotting.
+This file is used in main.py
+'''
+
 #Create a time column
 def create_time_column(myData):
     """

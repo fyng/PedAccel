@@ -8,6 +8,14 @@ import seaborn as sns
 import scaleogram as scg
 import pywt #installed package name is pywavelets
 
+'''
+This file contains functions for frequency domain manipulation. 
+*Butter_bandpass filter
+*Continuous Wavelet Transform
+*FFT
+*RollingAverage
+*Comb Filter
+'''
 
 def butter_bandpass(lowcut, highcut, sr, order=20):
     """
