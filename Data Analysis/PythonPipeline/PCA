@@ -1,0 +1,97 @@
+#Import Necessary Libraries
+import pandas as pd
+import General_Functions
+import numpy as np
+import Smoothing_Functions
+import Frequency_Domain
+from matplotlib import pyplot as plt
+import Actigraph_Metrics
+import random
+import tsfresh
+from tsfresh.utilities.dataframe_functions import impute
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import matplotlib.lines as mlines
+from scipy.io import loadmat
+import os
+
+os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline')
+
+filename = 'pt9_win5_5.mat'
+x_mag = (loadmat(filename)["x_mag"])
+SBS = loadmat(filename)["sbs"]
+
+sbs = []
+for i in SBS[0]:
+    sbs.append(i)
+abs_energy = []
+abs_max = []
+count_above_mean = []
+count_below_mean = []
+std = []
+mean = []
+number_peaks = []
+sample_entropy = []
+sum_of_changes = []
+kurtosis = []
+complexity = []
+mean_abs_change = []
+variance = []
+print('Next is feature extraction')
+for i in x_mag:
+    abs_energy.append(tsfresh.feature_extraction.feature_calculators.abs_energy(i))
+    abs_max.append(tsfresh.feature_extraction.feature_calculators.absolute_maximum(i))
+    count_above_mean.append(tsfresh.feature_extraction.feature_calculators.count_above_mean(i))
+    count_below_mean.append(tsfresh.feature_extraction.feature_calculators.count_below_mean(i))
+    std.append(np.std(i))
+    mean.append(np.mean(i))
+    number_peaks.append(tsfresh.feature_extraction.feature_calculators.number_peaks(i, 1000))
+    sum_of_changes.append(tsfresh.feature_extraction.feature_calculators.absolute_sum_of_changes(i))
+    kurtosis.append(tsfresh.feature_extraction.feature_calculators.kurtosis(i))
+    complexity.append(tsfresh.feature_extraction.feature_calculators.lempel_ziv_complexity(i,60))
+    mean_abs_change.append(tsfresh.feature_extraction.feature_calculators.mean_abs_change(i))
+    variance.append(tsfresh.feature_extraction.feature_calculators.variance(i))
+print('Making data frame')
+data = {'SBS' : sbs, 'abs_energy' : abs_energy,'abs_max' : abs_max,'count_above_mean' : count_above_mean,'count_below_mean' : count_below_mean,
+       'std' : std,'mean' : mean,'number_peaks' : number_peaks, 'Sum of changes': sum_of_changes, 'Kurtosis': kurtosis, 
+       'Complexity': complexity, 'mean abs changhe': mean_abs_change, 'Variance': variance}
+df = pd.DataFrame(data)
+print('df made')
+#Normalize the data 
+x = df.values
+x = StandardScaler().fit_transform(x) # normalizing the features
+#visualize normalized data
+feat_cols = ['feature'+str(i) for i in range(x.shape[1])]
+normalised_df = pd.DataFrame(x,columns=feat_cols)
+print('PCA calculations')
+
+#PCA
+pca_actigraphy = PCA(n_components=4)
+principalComponents_actigraphy = pca_actigraphy.fit_transform(x)
+principal_actigraphy_Df = pd.DataFrame(data = principalComponents_actigraphy
+             , columns = ['principal component 1', 'principal component 2','principal component 3','principal component 4'])
+print(principal_actigraphy_Df.head(20))
+print('Explained variation per principal component: {}'.format(pca_actigraphy.explained_variance_ratio_))
+print('Plotting PCA')
+#Plot PCA
+plt.figure(figsize=(12,12))
+plt.figure(figsize=(12,12))
+plt.xlabel('Principal Component - 2',fontsize=20)
+plt.ylabel('Principal Component - 3',fontsize=20)
+plt.title("Principal Component Analysis of Actigraphy and SBS",fontsize=20)
+for i in range(len(df['SBS'])):
+    if df['SBS'][i] == -1:
+        color = 'purple'
+    if df['SBS'][i] == 0:
+        color = 'blue'
+    if df['SBS'][i] == 1:
+        color = 'orange'
+    if df['SBS'][i] == 2: 
+        color = 'red'
+    plt.scatter(principal_actigraphy_Df.loc[i, 'principal component 2'], principal_actigraphy_Df.loc[i, 'principal component 3'], c = color, s = 50)
+neg1 = mlines.Line2D([], [], color='purple', marker='o', ls='', label='SBS -1')
+zero = mlines.Line2D([], [], color='blue', marker='o', ls='', label='SBS 0')
+one = mlines.Line2D([], [], color='orange', marker='o', ls='', label='SBS 1')
+two = mlines.Line2D([], [], color='red', marker='o', ls='', label='SBS 2')
+plt.legend(handles=[neg1, zero, one, two])
+plt.show()
