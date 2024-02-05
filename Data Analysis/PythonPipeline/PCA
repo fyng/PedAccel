@@ -37,8 +37,15 @@ kurtosis = []
 complexity = []
 mean_abs_change = []
 variance = []
+count_above_13 = []
+count_above_15 = []
+count_above_17 = []
 print('Next is feature extraction')
 for i in x_mag:
+    N = len(i)
+    count_above_13.append(N*tsfresh.feature_extraction.feature_calculators.count_above(i,1.3))
+    count_above_15.append(N*tsfresh.feature_extraction.feature_calculators.count_above(i,1.5))
+    count_above_17.append(N*tsfresh.feature_extraction.feature_calculators.count_above(i,1.7))
     abs_energy.append(tsfresh.feature_extraction.feature_calculators.abs_energy(i))
     abs_max.append(tsfresh.feature_extraction.feature_calculators.absolute_maximum(i))
     count_above_mean.append(tsfresh.feature_extraction.feature_calculators.count_above_mean(i))
@@ -54,7 +61,8 @@ for i in x_mag:
 print('Making data frame')
 data = {'SBS' : sbs, 'abs_energy' : abs_energy,'abs_max' : abs_max,'count_above_mean' : count_above_mean,'count_below_mean' : count_below_mean,
        'std' : std,'mean' : mean,'number_peaks' : number_peaks, 'Sum of changes': sum_of_changes, 'Kurtosis': kurtosis, 
-       'Complexity': complexity, 'mean abs changhe': mean_abs_change, 'Variance': variance}
+       'Complexity': complexity, 'mean abs changhe': mean_abs_change, 'Variance': variance, 'Count above 1.3g': count_above_13,
+       'Count above 1.5g': count_above_15,'Count above 1.7g': count_above_17}
 df = pd.DataFrame(data)
 print('df made')
 #Normalize the data 
