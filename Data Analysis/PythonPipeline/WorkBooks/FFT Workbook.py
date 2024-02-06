@@ -5,7 +5,7 @@ import sys
 # print the original sys.path
 print('Original sys.path:', sys.path)
 # append a new directory to sys.path
-sys.path.append(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\MainScripts')
+sys.path.append(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\Modules')
 # print the updated sys.path
 print('Updated sys.path:', sys.path)
 
@@ -35,7 +35,7 @@ Frequency_Domain.FFTPlot(freqData,freqBins, 100, lower_freq=.1, upper_freq=20, l
 Frequency_Domain.scipy_comb_filter(signal)
 
 #Average out harmonics every f0Hz in frequency domain
-#if f0 is not a frequency bin, code will not compile
+#if f0 is not a frequency bin, code will give run time error
 freqData, freqBins = Frequency_Domain.average_out_harmonics(signal,f0=1,fmax=20)
 #Inverse FFT after averaging out harmonics
 itx = Frequency_Domain.inverse_FFT(freqData)
