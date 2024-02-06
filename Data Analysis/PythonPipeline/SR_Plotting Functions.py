@@ -46,7 +46,7 @@ def plot_Data(myData, xData_name, yData_name, title='Raw Data'):
     plt.grid(True)
     plt.show()
 
-def FFT(y,sr=100,lower_freq=0, upper_freq=20, lower_cutoff=40, upper_cutoff=10000,title='FFT Plot'):
+def FFT(y, sr=100, lower_freq=0, upper_freq=20, lower_cutoff=40, upper_cutoff=10000, title='FFT Plot', figsize=(12, 6), xlim=None, ylim=None):
     """
     :param myData: gt3x file containing accelerometry data
     :param yData_name: Column to compute the Fourier Transfrom of
@@ -55,6 +55,9 @@ def FFT(y,sr=100,lower_freq=0, upper_freq=20, lower_cutoff=40, upper_cutoff=1000
     :param upper_freq: Maximum frequency to Plot, default to 20Hz
     :param lower_cutoff: Minimum Magnitude to Plot, default to 1000
     :param upper_cutoff: Maximum Magnitude to plot, default to 20000
+    :param figsize: Size of the figure, default to (12, 6)
+    :param xlim: Tuple specifying the limits of the x-axis, default to None
+    :param ylim: Tuple specifying the limits of the y-axis, default to None
     :return: Plot of frequency and magnitudes
     """
     input_data = np.array(y)
@@ -70,17 +73,21 @@ def FFT(y,sr=100,lower_freq=0, upper_freq=20, lower_cutoff=40, upper_cutoff=1000
     # Band pass filter with lower cutoff and upper cutoff
     new_array[new_array > upper_cutoff] = 0
     new_array[new_array < lower_cutoff] = 0
-    # Get the one-sided specturm
+    # Get the one-sided spectrum
     n_oneside = N // 2
     # get the one side frequency
     f_oneside = freq[:n_oneside]
     #Plot frequency decomposition
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=figsize)
     print(f'The maximum frequency is {(max( (v, i) for i, v in enumerate(new_array[lower_freq_index:upper_freq_index]) )[1])/T}')
     plt.plot(f_oneside[lower_freq_index:upper_freq_index], new_array[lower_freq_index:upper_freq_index])
     plt.xlabel('Freq (Hz)')
     plt.ylabel('FFT Amplitude |X(freq)|')
     plt.title(title)
+    if xlim:
+        plt.xlim(xlim)
+    if ylim:
+        plt.ylim(ylim)
     plt.show()
 
 def butter_bandpass_filter(data, lower_cutoff, upper_cutoff, fs=100, order=4):
@@ -213,7 +220,13 @@ if __name__ == "__main__":
 
     # Plotting data
     # plot_Data(sliced_data, 'Time(s)', 'VecMag', title='Vector Magnitude vs Time')
-    FFT(y, sr, lower_freq =.3, upper_freq=30, lower_cutoff=0, upper_cutoff=40, title='SBS -1: FFT of Raw Data')
+    # Example usage
+# Set the limits for x and y-axes
+    xlim = (0, 20)
+    ylim = (0, 20000)
+    FFT(y, sr, lower_freq = 0.3, upper_freq = 30, lower_cutoff = 0, upper_cutoff = 40, title = 'SBS -1: FFT of Raw Data', figsize = (10,6), xlim = (0, 20), ylim = (0, 30))
+
+    # FFT(y, sr, lower_freq =.3, upper_freq=30, lower_cutoff=0, upper_cutoff=40, title='SBS -1: FFT of Raw Data')
 
     # Comb Filters
     # scipy_comb_filter(y)
