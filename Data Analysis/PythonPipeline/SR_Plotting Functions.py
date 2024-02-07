@@ -13,7 +13,6 @@ Sid's Testing Functions:
 Functions and Test Code Included
 '''
 
-
 def create_time_column(myData):
     """
     This Function Creates a time column in the Accelerometry Data Frame
@@ -77,6 +76,17 @@ def FFT(y, sr=100, lower_freq=0, upper_freq=20, lower_cutoff=40, upper_cutoff=10
     n_oneside = N // 2
     # get the one side frequency
     f_oneside = freq[:n_oneside]
+    
+    # Calculate power spectral density (PSD)
+    psd = (1 / (sr * N)) * np.square(new_array)
+    
+    # Calculate the area under the curve
+    area = np.trapz(new_array[lower_freq_index:upper_freq_index], x=f_oneside[lower_freq_index:upper_freq_index])
+    print("Area under the curve:", area)
+    
+    # Print PSD
+    print("Power Spectral Density (PSD):", psd[lower_freq_index:upper_freq_index].sum())
+    
     #Plot frequency decomposition
     plt.figure(figsize=figsize)
     print(f'The maximum frequency is {(max( (v, i) for i, v in enumerate(new_array[lower_freq_index:upper_freq_index]) )[1])/T}')
@@ -220,8 +230,8 @@ if __name__ == "__main__":
 
     # Plotting data
     # plot_Data(sliced_data, 'Time(s)', 'VecMag', title='Vector Magnitude vs Time')
-    # Example usage
-# Set the limits for x and y-axes
+    
+    # Set the limits for x and y-axes
     xlim = (0, 20)
     ylim = (0, 20000)
     FFT(y, sr, lower_freq = 0.3, upper_freq = 30, lower_cutoff = 0, upper_cutoff = 40, title = 'SBS -1: FFT of Raw Data', figsize = (10,6), xlim = (0, 20), ylim = (0, 30))
@@ -231,13 +241,13 @@ if __name__ == "__main__":
     # Comb Filters
     # scipy_comb_filter(y)
     # Frequency_Domain.scipy_comb_filter(y)
-    #
+
     # # Rolling Average Filter
     # Frequency_Domain.freq_domain_rollingAvg(y, wlen=11)
-    #
+
     # # Power Spectral Density
     # frequencies, psd_values = calculate_psd(x, y)
     # plot_psd(frequencies, psd_values)
-    #
+
     # # Wavelet Transform
     # plot_continuous_wavelet_transform(y, x)
