@@ -251,3 +251,21 @@ if __name__ == "__main__":
 
     # # Wavelet Transform
     # plot_continuous_wavelet_transform(y, x)
+    
+
+    folder_path = 'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\Patient_9_5MIN1SW'
+
+    # List all CSV files in the folder
+    csv_files = [file for file in os.listdir(folder_path) if file.endswith('.csv')]
+
+    # Iterate through each CSV file
+    for file in csv_files:
+        # Read the CSV file
+        df = pd.read_csv(os.path.join(folder_path, file))
+    
+    # Assuming the column containing the data is named 'data_column'
+    # You need to replace 'data_column' with the actual name of your data column
+    data_column = df['data_column'].values
+    
+    # Run FFT on the data
+    FFT(data_column, title=file)
