@@ -213,9 +213,29 @@ def plot_psd(frequencies, psd_values):
     plt.ylabel('PSD (g^2/Hz)')
     plt.grid(True)
     plt.show()
+    
+def moving_average(signal, w):
+    """
+    :param signala:signal to work with
+    :param w: Window of rolling average
+    :return: new  signal with rolling average included
+    """
+    averaged = np.convolve(signal, np.ones(w), 'valid') / w
+    return averaged
+
+def median_filter(signal,num_passes, wlen = 301):
+    """
+    :param signal: signal to modify with Spline Fit Data
+    :param num_passes: number of times to smooth the data
+    :param wlen: size of window for rolling median
+    :return: Median Smoothed signal
+    """
+    for i in range(num_passes):
+        myDataArray = scipy.signal.medfilt(signal, kernel_size=wlen)
+    return myDataArray
 
 if __name__ == "__main__":
-    sliced_data = pd.read_csv(r"C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\Patient_9_5MIN1SW\SBSMINUS1_5MIN1SW_num2.csv")
+    sliced_data = pd.read_csv(r"C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\Patient_9_Intervals\SBS1_num1.csv")
     print(sliced_data.head(5))
 
     # Create New Columns
@@ -234,7 +254,8 @@ if __name__ == "__main__":
     # Set the limits for x and y-axes
     xlim = (0, 20)
     ylim = (0, 20000)
-    FFT(y, sr, lower_freq = 0.3, upper_freq = 30, lower_cutoff = 0, upper_cutoff = 40, title = 'SBS -1: FFT of Raw Data', figsize = (10,6), xlim = (0, 20), ylim = (0, 30))
+    med_y = moving_average(y, 51)
+    FFT(med_y, sr, lower_freq = 0.3, upper_freq = 30, lower_cutoff = 0, upper_cutoff = 40, title = 'SBS -1: FFT of Raw Data', figsize = (10,6), xlim = (0, 20), ylim = (0, 60))
 
     # FFT(y, sr, lower_freq =.3, upper_freq=30, lower_cutoff=0, upper_cutoff=40, title='SBS -1: FFT of Raw Data')
 
@@ -253,19 +274,19 @@ if __name__ == "__main__":
     # plot_continuous_wavelet_transform(y, x)
     
 
-    folder_path = 'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\Patient_9_5MIN1SW'
+    # folder_path = 'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\Patient_9_5MIN1SW'
 
-    # List all CSV files in the folder
-    csv_files = [file for file in os.listdir(folder_path) if file.endswith('.csv')]
+    # # List all CSV files in the folder
+    # csv_files = [file for file in os.listdir(folder_path) if file.endswith('.csv')]
 
-    # Iterate through each CSV file
-    for file in csv_files:
-        # Read the CSV file
-        df = pd.read_csv(os.path.join(folder_path, file))
+    # # Iterate through each CSV file
+    # for file in csv_files:
+    #     # Read the CSV file
+    #     df = pd.read_csv(os.path.join(folder_path, file))
     
-    # Assuming the column containing the data is named 'data_column'
-    # You need to replace 'data_column' with the actual name of your data column
-    data_column = df['data_column'].values
+    # # Assuming the column containing the data is named 'data_column'
+    # # You need to replace 'data_column' with the actual name of your data column
+    # data_column = df['data_column'].values
     
-    # Run FFT on the data
-    FFT(data_column, title=file)
+    # # Run FFT on the data
+    # FFT(data_column, title=file)
