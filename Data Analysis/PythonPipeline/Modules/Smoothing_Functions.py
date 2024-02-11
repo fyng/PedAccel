@@ -7,7 +7,7 @@ import pywt #installed package name is pywavelets
 import math
 
 
-def moving_average(signal, w):
+def moving_average(signal, w=50):
     """
     :param signala:signal to work with
     :param w: Window of rolling average
@@ -16,7 +16,7 @@ def moving_average(signal, w):
     averaged = np.convolve(signal, np.ones(w), 'valid') / w
     return averaged
 
-def median_filter(signal,num_passes, wlen = 301):
+def median_filter(signal,num_passes, wlen = 51):
     """
     :param signal: signal to modify with Spline Fit Data
     :param num_passes: number of times to smooth the data
@@ -67,3 +67,17 @@ def Wavelet_Smoothing(x,y, threshold=.5):
     plt.title("Denoised Signal")
     plt.tight_layout()
     plt.show()
+
+def threshold_data(signal, cutoff):
+    signal = np.array(signal)
+    low = signal < cutoff
+    signal[low] = 0
+    return signal
+
+
+def ENMO(signal,threshold = True):
+    signal = np.array(signal)
+    signal = abs(signal) - 1
+    if(threshold):
+        signal = threshold_data(signal, cutoff = .03)
+    return signal
