@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import scipy
 from scipy import stats
 import skdh #Scikit-Digital-Health for pip install
+import Smoothing_Functions
 
 #Calculates area under the curve of some input signal
 def calc_area_under_curve(x,y):
@@ -32,7 +33,7 @@ def Scipy_find_peaks(x):
     return len(peaks)
 
 #Generate MAD data...To Do: Double check this with the scipy version
-def VegMag_MAD(signal,wlen = 100):
+def VecMag_MAD(signal,wlen = 100, threshold = True):
     """
     :param signal: Vector Magnitude Data to compute MAD for
     :param wlen: Length of window to generate a MAD data point for
@@ -40,14 +41,19 @@ def VegMag_MAD(signal,wlen = 100):
     """
     r_avg = []
     MAD = []
-    for i in range(len(signal)):
+    
+    for i in range(int(len(signal)/wlen)):
         #r_avg takes a window length and computes the average in that window of the vector magnitudes.'
         #It is not a rolling average, and the end point of one window is the start point of the next. 
         #It then repeats that average a window length number of times so that the raw data and r_avg data has the same number of points. 
         #Ex) my array is [0,1,2,3,4,5,6,7,8] and wlen = 3, r_avg = [1,1,1,4,4,4,7,7,7]
-        r_avg.append(np.repeat(np.mean(signal[i*wlen:(i+1)*wlen])), wlen)
+        slice = signal[i*wlen:(i+1)*wlen]
+        Mymean = np.mean(slice)
+        temp_r_avg = np.repeat(Mymean, wlen)
         #MAD is the average of the absolute value of each vector magnitude sample minus the mean in each window
-        MAD.append(np.mean(abs(signal[i*wlen:(i+1)*wlen]-r_avg[i*wlen:(i+1)*wlen])))
+        toMAD = (abs(slice-temp_r_avg))
+        MAD.append(np.mean(toMAD))
+
     return MAD
 
 ##Generated MAD data from triaxial raw data 
