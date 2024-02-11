@@ -164,7 +164,7 @@ for p in patients:
     pat_age = prism.get_group(p).mean()
     # preserve vitals timestamps while adding SBS where available
     patient_multi = pd.merge(left=vitals, right=sbs_p, left_index=True, right_index=True, how='left')
-    patient_multi = patient_multi.set_index(pd.Series(patient_multi.index).dt.round('T').astype('int64')//10**9//60)
+    # patient_multi = patient_multi.set_index(pd.Series(patient_multi.index).dt.round('T').astype('int64')//10**9//60)
     
     if np.any(np.abs(patient_multi['SBS']) >= 2):
         y_data = patient_multi['SBS']
@@ -177,17 +177,19 @@ for p in patients:
         for a, b in zip(win_size_a, win_size_b):
             starts = []
             ends = []
-            for index in y_has_data:
-                starts.append(index + a)
-                ends.append(index + b)
+
+            for idx in y_has_data:
+                start = y_data.index[idx] + timedelta(seconds=60*a)
+                end = y_data.index[idx] + timedelta(seconds=60*b)
+                starts.append(start)
+                ends.append(end)
 
             y_no_nan = y_data.dropna().tolist()
             for l in labels:
+                index_ = 0
                 for start, end in zip(starts, ends):
-                    start = 0 if start < 0 else start
-                    end = X_data.shape[0] if end > X_data.shape[0] else end
                     x_t = X_data[l][start:end]
-                    y_t = y_data.iloc[start-a]
+                    y_t = y_data.iloc[y_has_data[index_]]
                     if x_t.isna().sum() == 0 and len(x_t)>5:
                         tsf = tsfel.time_series_features_extractor(cfg, x_t.to_numpy(), fs = fs, verbose = 0)
                         win_size_dict['all_features'] = pd.concat([win_size_dict['all_features'], tsf], ignore_index=True)
@@ -197,7 +199,7 @@ for p in patients:
                         win_size_dict['patient_id'].append(ctr)
                         win_size_dict['age_m'].append(pat_age)
                         win_size_dict['sbs_data'].append(y_t)
-                index += 1
+                    index_ += 1
         
         for key in win_size_dict:
             if key != 'all_features':
