@@ -33,7 +33,7 @@ def Scipy_find_peaks(x):
     return len(peaks)
 
 #Generate MAD data...To Do: Double check this with the scipy version
-def VecMag_MAD(signal,wlen = 100, threshold = True):
+def VecMag_MAD(signal,wlen = 100):
     """
     :param signal: Vector Magnitude Data to compute MAD for
     :param wlen: Length of window to generate a MAD data point for
