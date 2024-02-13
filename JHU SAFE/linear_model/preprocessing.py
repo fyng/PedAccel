@@ -11,9 +11,9 @@ from sklearn.linear_model import LinearRegression
 import tsfel
 # %%
 X_train = loadmat('../DONOTPUSH/data.mat')['X_train']
-y_train = np.round(loadmat('../DONOTPUSH/data.mat')['y_train'] + 3)  
+y_train = np.round(loadmat('../DONOTPUSH/data.mat')['y_train'])  
 X_test = loadmat('../DONOTPUSH/data.mat')['X_test']   
-y_test = np.round(loadmat('../DONOTPUSH/data.mat')['y_test'] + 3)
+y_test = np.round(loadmat('../DONOTPUSH/data.mat')['y_test'])
 # %%
 sns.histplot(y_test.ravel())
 sns.histplot(y_train.ravel())
@@ -45,5 +45,5 @@ y_train = y_train.reshape(-1, 1)
 y_test = y_test.reshape(-1, 1) 
 # %%
 filename = "fold1.mat"
-savemat(filename, {'X_train':x_train, 'y_train':y_train_data, 'X_test':x_test, 'y_test':y_test_data})
+savemat(filename, {'X_train':x_train, 'y_train':y_train, 'X_test':x_test, 'y_test':y_test})
 # %%
