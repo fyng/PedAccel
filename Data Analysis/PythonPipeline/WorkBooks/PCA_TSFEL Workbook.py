@@ -83,5 +83,3 @@ one = mlines.Line2D([], [], color='orange', marker='o', ls='', label='SBS 1')
 two = mlines.Line2D([], [], color='red', marker='o', ls='', label='SBS 2')
 plt.legend(handles=[neg1, zero, one, two])
 plt.show()
-
-# %%
