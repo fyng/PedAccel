@@ -31,7 +31,6 @@ for i in range(x_mag.shape[0]):
     features_list.append(features)
     sbs_list.append(SBS[0][i])
 
-
 #%%
 # Convert features and SBS scores to DataFrame
 features_array = np.array(features_list).reshape(-1, 389)
@@ -43,7 +42,6 @@ df_sbs = pd.DataFrame({'SBS': sbs_list})
 #%%
 # Concatenate features and SBS scores
 df = pd.concat([df_sbs, df_features], axis=1)
-
 df.head(10)
 
 # Normalize the data
@@ -61,8 +59,8 @@ print('Explained variation per principal component: {}'.format(pca_actigraphy.ex
 
 # Plot PCA
 plt.figure(figsize=(12, 12))
-plt.xlabel('Principal Component - 2', fontsize=20)
-plt.ylabel('Principal Component - 3', fontsize=20)
+plt.xlabel('Principal Component - 1', fontsize=20)
+plt.ylabel('Principal Component - 2', fontsize=20)
 plt.title("Principal Component Analysis of Actigraphy and SBS", fontsize=20)
 
 for i in range(len(df['SBS'])):
@@ -74,7 +72,7 @@ for i in range(len(df['SBS'])):
         color = 'orange'
     elif df['SBS'][i] == 2:
         color = 'red'
-    plt.scatter(principal_actigraphy_Df.loc[i, 'principal component 2'], principal_actigraphy_Df.loc[i, 'principal component 3'], c=color, s=50)
+    plt.scatter(principal_actigraphy_Df.loc[i, 'principal component 1'], principal_actigraphy_Df.loc[i, 'principal component 2'], c=color, s=50)
 
 # Manually create a legend
 neg1 = mlines.Line2D([], [], color='purple', marker='o', ls='', label='SBS -1')
