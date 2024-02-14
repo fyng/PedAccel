@@ -5,6 +5,7 @@
 import sys
 # caution: path[0] is reserved for script path (or '' in REPL)
 sys.path.insert(1, r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\Modules")
+sys.path.insert(1, r"C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\Modules")
 
 
 #Import Necessary Libraries
@@ -21,7 +22,8 @@ from scipy.io import loadmat
 import os
 
 #Load Data
-os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
+os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
+# os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
 
 filename = 'pt9_win5_5.mat'
 x_mag = (loadmat(filename)["x_mag"])
