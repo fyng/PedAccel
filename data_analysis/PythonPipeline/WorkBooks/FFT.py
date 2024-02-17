@@ -1,29 +1,22 @@
 #This workbook is used to filter and generate FFT Plots using Frequency_Domain library
 
-#Give access to MainScripts directory 
-import sys
-# print the original sys.path
-print('Original sys.path:', sys.path)
-# append a new directory to sys.path
-sys.path.append(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\Modules')
-# print the updated sys.path
-print('Updated sys.path:', sys.path)
-
 #Import Necessary Libraries
-import Frequency_Domain
-import General_Functions
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy.io import loadmat
 import os
 
-#Load Data
-os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
+# Load Data
+data_dir = '/Users/fyng/Library/CloudStorage/OneDrive-med.cornell.edu/_jhu_picu/PedAccel/Data Analysis/PythonPipeline/PatientData/Patient9'
 filename = 'pt9_win5_5.mat'
-total_signal = (loadmat(filename)["x_mag"])
+
+fp = os.path.join(data_dir, filename)
+data = loadmat(fp)
+
+total_signal = data["x_mag"]
 #Use a specifc window from the signal array
 signal = total_signal[0] #Change the index to generate different FFTs
-SBS = loadmat(filename)["sbs"]
+sbs = data["sbs"]
 time = General_Functions.generate_time_array(signal, sr=100)
 
 #Generate FFT Data
