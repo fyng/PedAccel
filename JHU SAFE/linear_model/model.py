@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import torch.optim as optim
 import seaborn as sns
 from sklearn import metrics
-from sklearn.linear_model import Lasso, Ridge
+from sklearn.linear_model import Lasso, Ridge, LinearRegession
 from sklearn.neural_network import MLPRegressor
 #%%
 fold = 1

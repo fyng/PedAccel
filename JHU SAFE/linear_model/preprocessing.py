@@ -14,9 +14,13 @@ from sklearn import metrics
 
 # %%
 X = loadmat('../DONOTPUSH/data.mat')['X']
-y = np.round(loadmat('../DONOTPUSH/data.mat')['y'])  
-
+y = loadmat('../DONOTPUSH/data.mat')['y']
+ids = loadmat('../DONOTPUSH/data.mat')['group']
 #%%
+selected = np.squeeze(y != y.round)
+X = X[selected, :]
+ids = np.squeeze(ids)[selected]
+y = np.squeeze(y)[selected]
 kf = KFold(n_splits=10, shuffle = True)
 
 # %%
@@ -28,7 +32,7 @@ del cfg_file["spectral"]["Spectral roll-on"]
 fs = 1/60
 
 # %%
-x_features = np.concatenate([np.vstack([tsfel.time_series_features_extractor(cfg_file, X[i, k, :], fs = fs, verbose = 0).to_numpy() for i in range(X.shape[0])])[:, :, None] for k in range(X.shape[1]-1)], axis = 2)
+x_features = np.concatenate([np.vstack([tsfel.time_series_features_extractor(cfg_file, X[i, k, :], fs = fs, verbose = 0).to_numpy() for i in range(X.shape[0])])[:, :, None] for k in range(X.shape[1]-2)], axis = 2)
 
 # %%
 x_features = x_features.reshape(x_features.shape[0], -1)
@@ -36,7 +40,7 @@ X = np.concatenate((x_features, X[:, 3, :].mean(axis = 1)[:, None]), axis=1)
 #%%
 y = np.squeeze(y[:])
 #%%
-for i, (train_idx, test_idx) in enumerate(kf.split(X)):
+for i, (train_idx, test_idx) in enumerate(kf.split(X, groups=ids)):
     x_train_data = X[train_idx, :]
     y_train_data = y[train_idx]
     x_test_data = X[test_idx, :]
