@@ -67,14 +67,17 @@ F1 = []
 Sens = []
 Spec = []
 Kappa = []
+y_true = []
+y_pred = []
 
 for fold in range(10):
+
     X_train = (loadmat(f'fold{fold}.mat')['X_train'])
     y_train = (loadmat(f'fold{fold}.mat')['y_train']) 
     X_test = (loadmat(f'fold{fold}.mat')['X_test'])  
     y_test = (loadmat(f'fold{fold}.mat')['y_test'])
     y_test = y_test.sum(axis = 1)
-
+    print(X_train.shape[0], X_test.shape[0])
     y_train_label = y_train.sum(axis = 1)
     class_sample_count = np.array([len(np.where(y_train_label==t)[0]) for t in np.unique(y_train_label)])
     weight = 1. / class_sample_count
@@ -102,6 +105,8 @@ for fold in range(10):
         specificity = sum(specs)/len(specs)
         Y = y_test
         Y_PRED = y_te
+        y_true += np.squeeze(Y).tolist()
+        y_pred += np.squeeze(Y_PRED).tolist()
     
     Acc.append(accuracy)
     Kappa.append(kappa)
@@ -112,14 +117,19 @@ for fold in range(10):
     folder="results/"
     heatmap_file = folder + "heat" + str(fold) + ".png"
     scatter_file = folder + "scatter" + str(fold) + ".png"
-    sns.heatmap(metrics.confusion_matrix(Y, Y_PRED), annot = True)
-    fig = heat.get_figure()
+    plot = sns.heatmap(metrics.confusion_matrix(Y, Y_PRED), annot = True)
+    fig = plot.get_figure()
     fig.savefig(heatmap_file)
     plt.close(fig)
     scatter = sns.scatterplot(importance.ravel())
     fig = scatter.get_figure()
     fig.savefig(scatter_file)
     plt.close(fig)
-
+#%%
+folder = "results/"
+plot = sns.heatmap(metrics.confusion_matrix(y_true, y_pred), annot = True)
+fig = plot.get_figure()
+fig.savefig(folder + "overall.png")
+plt.close(fig)
 savemat(folder + "metrics.mat",  {'Acc':Acc, 'Spec':Spec, 'Sens':Sens, 'Kappa':Kappa, 'F1':F1})
 # %%
