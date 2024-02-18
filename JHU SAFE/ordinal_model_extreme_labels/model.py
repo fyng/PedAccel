@@ -7,6 +7,7 @@ import seaborn as sns
 import numpy as np
 import torch.optim as optim
 import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn import metrics
 from torch.utils.data.sampler import WeightedRandomSampler
 
@@ -44,10 +45,10 @@ def training(model, X, y, samples_weight, max_iter):
     for i in range(max_iter):
         opt_j.zero_grad() # Setting our stored gradients equal to zero
         sampler = list(WeightedRandomSampler(samples_weight, len(samples_weight), replacement = True))
-        # X_data = X_train[sampler, :]
-        # y_data = y_train[sampler]
-        X_data = X_train
-        y_data = y_train
+        X_data = X_train[sampler, :]
+        y_data = y_train[sampler]
+        # X_data = X_train
+        # y_data = y_train
         outputs = model(X_data)
         loss_c = criterion(outputs, y_data) 
         loss_criterion.append(loss_c.detach().item())
@@ -61,44 +62,64 @@ def training(model, X, y, samples_weight, max_iter):
     return loss_criterion, loss_sparsity, model.w.weight.detach().numpy()
 
 # %%
-X_train = (loadmat('fold1.mat')['X_train'])
-y_train = (loadmat('fold1.mat')['y_train']) 
-X_test = (loadmat('fold1.mat')['X_test'])  
-y_test = (loadmat('fold1.mat')['y_test'])
-y_test = y_test.sum(axis = 1)
-# %%
-y_train_label = y_train.sum(axis = 1)
-class_sample_count = np.array([len(np.where(y_train_label==t)[0]) for t in np.unique(y_train_label)])
-weight = 1. / class_sample_count
-samples_weight = np.array([weight[t] for t in y_train_label])
-samples_weight = torch.from_numpy(samples_weight)
+Acc = []
+F1 = []
+Sens = []
+Spec = []
+Kappa = []
 
-# %%
-# training
-model = ordinal_regression(X_train.shape[1], y_train.shape[1])
-loss_c, loss_s,weights = training(model, X_train.astype('double'), y_train.astype('int16'), samples_weight,  10000)
-importance = weights
+for fold in range(10):
+    X_train = (loadmat(f'fold{fold}.mat')['X_train'])
+    y_train = (loadmat(f'fold{fold}.mat')['y_train']) 
+    X_test = (loadmat(f'fold{fold}.mat')['X_test'])  
+    y_test = (loadmat(f'fold{fold}.mat')['y_test'])
+    y_test = y_test.sum(axis = 1)
 
-# %%
-with torch.no_grad():
-    y_prob_fixed = model(torch.Tensor(X_test))
-    #Y_hat = (cpu(y_j_hat).data.numpy()> ordinal_thres).cumprod(axis = 1).sum(axis = 1)
-    y_te = (y_prob_fixed.detach().numpy() > 0.5).cumprod(axis = 1).sum(axis = 1)
-    y_te[y_te < 0] = 0
-    f1 = metrics.f1_score(y_test, y_te, average='macro')
-    accuracy = metrics.accuracy_score(y_test, y_te)
-    kappa = metrics.cohen_kappa_score(y_test, y_te)
-    sensitivity = metrics.recall_score(y_test, y_te, average='macro')
-    specs = []
-    for i in range(1, 4):
-        prec, recall,_, _ = metrics.precision_recall_fscore_support(y_test==i, y_te==i, pos_label=True, average=None)
-        specs.append(recall[0])
-    specificity = sum(specs)/len(specs)
-    Y = y_test
-    Y_PRED = y_te
+    y_train_label = y_train.sum(axis = 1)
+    class_sample_count = np.array([len(np.where(y_train_label==t)[0]) for t in np.unique(y_train_label)])
+    weight = 1. / class_sample_count
+    samples_weight = np.array([weight[t] for t in y_train_label])
+    samples_weight = torch.from_numpy(samples_weight)
 
-# %%
-sns.heatmap(metrics.confusion_matrix(Y, Y_PRED), annot = True)
-# %%
-sns.scatterplot(importance.ravel())
+    # training
+    model = ordinal_regression(X_train.shape[1], y_train.shape[1])
+    loss_c, loss_s,weights = training(model, X_train.astype('double'), y_train.astype('int16'), samples_weight,  10000)
+    importance = weights
+
+    with torch.no_grad():
+        y_prob_fixed = model(torch.Tensor(X_test))
+        #Y_hat = (cpu(y_j_hat).data.numpy()> ordinal_thres).cumprod(axis = 1).sum(axis = 1)
+        y_te = (y_prob_fixed.detach().numpy() > 0.5).cumprod(axis = 1).sum(axis = 1)
+        y_te[y_te < 0] = 0
+        f1 = metrics.f1_score(y_test, y_te, average='macro')
+        accuracy = metrics.accuracy_score(y_test, y_te)
+        kappa = metrics.cohen_kappa_score(y_test, y_te)
+        sensitivity = metrics.recall_score(y_test, y_te, average='macro')
+        specs = []
+        for i in range(1, 5):
+            prec, recall,_, _ = metrics.precision_recall_fscore_support(y_test==i, y_te==i, pos_label=True, average=None)
+            specs.append(recall[0])
+        specificity = sum(specs)/len(specs)
+        Y = y_test
+        Y_PRED = y_te
+    
+    Acc.append(accuracy)
+    Kappa.append(kappa)
+    Sens.append(sensitivity)
+    Spec.append(specificity)
+    F1.append(f1)
+
+    folder="results/"
+    heatmap_file = folder + "heat" + str(fold) + ".png"
+    scatter_file = folder + "scatter" + str(fold) + ".png"
+    sns.heatmap(metrics.confusion_matrix(Y, Y_PRED), annot = True)
+    fig = heat.get_figure()
+    fig.savefig(heatmap_file)
+    plt.close(fig)
+    scatter = sns.scatterplot(importance.ravel())
+    fig = scatter.get_figure()
+    fig.savefig(scatter_file)
+    plt.close(fig)
+
+savemat(folder + "metrics.mat",  {'Acc':Acc, 'Spec':Spec, 'Sens':Sens, 'Kappa':Kappa, 'F1':F1})
 # %%
