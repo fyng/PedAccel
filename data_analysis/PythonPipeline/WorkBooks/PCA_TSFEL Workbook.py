@@ -8,6 +8,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.lines as mlines
 from scipy.io import loadmat
 from scipy.stats import pearsonr
+from Modules import Actigraph_Metrics
 import os
 
 #%%
@@ -17,6 +18,8 @@ os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Ana
 filename = 'pt9_win5_5.mat'
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
+
+x_mag = Actigraph_Metrics.VecMag_MAD(x_mag)
 
 #%%
 # Generate configuration file for feature extraction
@@ -48,26 +51,20 @@ x = df_features  # Features DataFrame
 y = df['SBS']
 
 #%%
-# Normalize the data
-CCoeff = []
-
-# Assuming 'y' is the target variable and 'x' is the dataset of features
-for feature in x.columns:  # Loop through each feature in the dataset
-    corr, _ = pearsonr(y, x[feature])  # Compute Pearson correlation coefficient
-    CCoeff.append(np.abs(corr))  # Append the absolute value of correlation coefficient
-
-# Sort features based on absolute correlation coefficients
-sorted_features = [x for _, x in sorted(zip(CCoeff, x.columns), reverse=True)]
-
-# Select top 10 features with highest absolute correlation
-top_10_features = sorted_features[:10]
-
-# Extract only the top 10 features
-x = x[top_10_features]
-
-# OR: Select All Features
+# Select All Features
 # x = df.iloc[:, 1:].values  # Exclude the SBS column
-x = StandardScaler().fit_transform(x)
+# Selects Top 10 Features After Normalization
+
+x_normalized = StandardScaler().fit_transform(x)
+
+# Convert the normalized features back to a DataFrame
+df_normalized = pd.DataFrame(x_normalized, columns=df_features.columns)
+
+# Calculate variance of each normalized feature
+normalized_feature_variances = df_normalized.var()
+
+# Select top 10 features with highest variance
+x = normalized_feature_variances.nlargest(10).index
 
 #%%
 # Perform PCA
