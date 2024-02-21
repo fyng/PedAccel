@@ -7,6 +7,14 @@ import scipy
 from scipy import stats
 import skdh #Scikit-Digital-Health for pip install
 import Smoothing_Functions
+import pandas as pd
+import tsfel
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+import matplotlib.lines as mlines
+from scipy.io import loadmat
+from scipy.stats import pearsonr
+import os
 
 #Calculates area under the curve of some input signal
 def calc_area_under_curve(x,y):
@@ -75,3 +83,36 @@ def Signal_To_Noise_Ratio(signal):
     std = np.std(signal)
     mean = np.mean(signal)
     return mean/std
+
+def Feature_Extraction(location, filename):
+    os.chdir(location)
+
+    x_mag = (loadmat(filename)["x_mag"])
+    SBS = loadmat(filename)["sbs"]
+
+    # Generate configuration file for feature extraction
+    cfg_file = tsfel.get_features_by_domain()
+    print(x_mag.shape)
+
+    # Extract features and restructure data
+    features_list = []
+    sbs_list = []
+    for i in range(x_mag.shape[0]):
+        features = tsfel.time_series_features_extractor(cfg_file, x_mag[i, :], fs=100, verbose=0)
+        features_list.append(features)
+        sbs_list.append(SBS[0][i])
+    
+    # Convert features and SBS scores to DataFrame
+    features_array = np.array(features_list).reshape(-1, 389)
+    df_features = pd.DataFrame(features_array)
+    df_features.columns = ['feature_' + str(col) for col in df_features.columns]
+
+    df_sbs = pd.DataFrame({'SBS': sbs_list})
+    
+    df = pd.concat([df_sbs, df_features], axis=1)
+    df.head(10)
+    x = df_features  # Features DataFrame
+    y = df['SBS'] 
+    
+    return x, y
+
