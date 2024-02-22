@@ -1,4 +1,6 @@
 #%%
+import sys
+sys.path.insert(0, r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\Modules')
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
@@ -8,7 +10,7 @@ from sklearn.preprocessing import StandardScaler
 import matplotlib.lines as mlines
 from scipy.io import loadmat
 from scipy.stats import pearsonr
-from Modules import Actigraph_Metrics
+import Actigraph_Metrics
 import os
 
 #%%
@@ -18,8 +20,6 @@ os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Ana
 filename = 'pt9_win5_5.mat'
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
-
-x_mag = Actigraph_Metrics.VecMag_MAD(x_mag)
 
 #%%
 # Generate configuration file for feature extraction
@@ -31,7 +31,10 @@ print(x_mag.shape)
 features_list = []
 sbs_list = []
 for i in range(x_mag.shape[0]):
-    features = tsfel.time_series_features_extractor(cfg_file, x_mag[i, :], fs=100, verbose=0)
+    signal = Actigraph_Metrics.VecMag_MAD(x_mag[i,:],100)
+    #signal = np.array(x_mag[i,:])-1
+    #signal = x_mag[i,:]
+    features = tsfel.time_series_features_extractor(cfg_file, signal, fs=100, verbose=0)
     features_list.append(features)
     sbs_list.append(SBS[0][i])
 
@@ -52,7 +55,7 @@ y = df['SBS']
 
 #%%
 # Select All Features
-# x = df.iloc[:, 1:].values  # Exclude the SBS column
+x = df.iloc[:, 1:].values  # Exclude the SBS column
 # Selects Top 10 Features After Normalization
 
 x_normalized = StandardScaler().fit_transform(x)
@@ -64,7 +67,9 @@ df_normalized = pd.DataFrame(x_normalized, columns=df_features.columns)
 normalized_feature_variances = df_normalized.var()
 
 # Select top 10 features with highest variance
-x = normalized_feature_variances.nlargest(10).index
+# Extract the actual feature data
+x = df_normalized[normalized_feature_variances.nlargest(10).index].values
+
 
 #%%
 # Perform PCA
