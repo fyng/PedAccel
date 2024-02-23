@@ -11,6 +11,7 @@ from sklearn.linear_model import LinearRegression
 import tsfel
 from sklearn.model_selection import GroupKFold
 from sklearn import metrics
+import os
 #%%
 def ordinal_labels(y, num_classes = None):
     if not num_classes:
@@ -25,16 +26,15 @@ def ordinal_labels(y, num_classes = None):
 X = loadmat('../DONOTPUSH/data.mat')['X']
 #%%
 y = loadmat('../DONOTPUSH/data.mat')['y']
-y[y < -2] = -2
-y= y+2
+y[y < -1] = -1
+y[y > 1] = 1
+y= y+1
 ids = loadmat('../DONOTPUSH/data.mat')['group']
 #%%
 selected = np.squeeze(y != y.round)
 X = X[selected, :]
 ids = np.squeeze(ids)[selected]
 y = np.squeeze(y)[selected]
-#%%
-kf = GroupKFold(n_splits=10)
 
 # %%
 # tsfel (https://tsfel.readthedocs.io/en/latest/)
@@ -51,20 +51,26 @@ x_features = np.concatenate([np.vstack([tsfel.time_series_features_extractor(cfg
 x_features = x_features.reshape(x_features.shape[0], -1)
 X = np.concatenate((x_features, X[:, 3, :].mean(axis = 1)[:, None]), axis=1)
 #%%
-y = ordinal_labels(np.squeeze(y).reshape(-1, 1),5)
+y = ordinal_labels(np.squeeze(y).reshape(-1, 1),3)
 #%%
 X = X[:, ~np.any(np.isnan(X), axis=0)]
 #%%
-for i, (train_idx, test_idx) in enumerate(kf.split(X,y, groups=ids)):
-    x_train_data = X[train_idx, :]
-    y_train_data = y[train_idx, :]
-    x_test_data = X[test_idx, :]
-    y_test_data = y[test_idx, :]
-    # normalizing input features
-    scaler = preprocessing.StandardScaler()
-    x_train = scaler.fit_transform(x_train_data)
-    x_test = scaler.transform(x_test_data)
+for repeat in range(10):
+    folder = f"cv{repeat}/"
+    if not os.path.isdir(folder):
+        os.mkdir(folder)
+    kf = GroupKFold(n_splits=10)
+    for i, (train_idx, test_idx) in enumerate(kf.split(X,y, groups=ids)):
+        x_train_data = X[train_idx, :]
+        y_train_data = y[train_idx, :]
+        x_test_data = X[test_idx, :]
+        y_test_data = y[test_idx, :]
+        # normalizing input features
+        scaler = preprocessing.StandardScaler()
+        x_train = scaler.fit_transform(x_train_data)
+        x_test = scaler.transform(x_test_data)
 
-    filename = f"fold{i}.mat"
-    savemat(filename, {'X_train':x_train, 'y_train':y_train_data, 'X_test':x_test, 'y_test':y_test_data})
+        filename = folder + (f"fold{i}.mat")
+        savemat(filename, {'X_train':x_train, 'y_train':y_train_data, 'X_test':x_test, 'y_test':y_test_data})
+
 # %%
