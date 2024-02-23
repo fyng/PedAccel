@@ -59,10 +59,12 @@ x = df_normalized[normalized_feature_variances.nlargest(10).index].values
 
 #%%
 # Perform PCA
-pca_actigraphy = PCA(n_components=4)
+pca_actigraphy = PCA(n_components=10)
 principalComponents_actigraphy = pca_actigraphy.fit_transform(x)
 principal_actigraphy_Df = pd.DataFrame(data=principalComponents_actigraphy,
-                                      columns=['principal component 1', 'principal component 2', 'principal component 3', 'principal component 4'])
+                                      columns=['principal component 1', 'principal component 2', 'principal component 3', 'principal component 4',
+                                               'principal component 5', 'principal component 6', 'principal component 7',
+                                               'principal component 8', 'principal component 9', 'principal component 10'])
 
 print('Explained variation per principal component: {}'.format(pca_actigraphy.explained_variance_ratio_))
 
@@ -70,20 +72,22 @@ print('Explained variation per principal component: {}'.format(pca_actigraphy.ex
 for component in range(pca_actigraphy.n_components_):
     plt.figure(figsize=(8, 6))
     plt.xlabel(f'Principal Component - {component+1}', fontsize=12)
-    plt.ylabel('Principal Component - {}'.format(component+2), fontsize=12)
-    plt.title("Principal Component Analysis of Actigraphy and SBS", fontsize=14)
+    plt.title(f'Principal Component Analysis of Actigraphy and SBS - {component + 1}', fontsize=14)
     
     for i in range(len(df['SBS'])):
         if df['SBS'][i] == -1:
             color = 'purple'
+            y_offset = -1 
         elif df['SBS'][i] == 0:
             color = 'blue'
+            y_offset = 0
         elif df['SBS'][i] == 1:
             color = 'orange'
+            y_offset = 1
         elif df['SBS'][i] == 2:
             color = 'red'
-        plt.scatter(principal_actigraphy_Df.loc[i, f'principal component {component+1}'], 
-                    principal_actigraphy_Df.loc[i, f'principal component {component+2}'], 
+            y_offset = 2
+        plt.scatter(principal_actigraphy_Df.loc[i, f'principal component {component+1}'], y_offset, 
                     c=color, s=50)
     
     # Manually create a legend
@@ -94,5 +98,4 @@ for component in range(pca_actigraphy.n_components_):
     plt.legend(handles=[neg1, zero, one, two])
     
     plt.show()
-
 # %%
