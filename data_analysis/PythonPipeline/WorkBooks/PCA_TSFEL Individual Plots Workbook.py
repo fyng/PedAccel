@@ -16,7 +16,7 @@ import Actigraph_Metrics
 # Load Data
 os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9')
 
-filename = 'pt9_win5_5.mat'
+filename = 'Patient9_5MIN_DSW_AllSBS.mat'
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
 
@@ -48,6 +48,7 @@ y = df['SBS'].values
 
 #%%
 # Normalize features
+x = df.iloc[:, 1:].values
 x_normalized = StandardScaler().fit_transform(x)
 df_normalized = pd.DataFrame(x_normalized, columns=df_features.columns)
 
@@ -89,6 +90,7 @@ for component in range(pca_actigraphy.n_components_):
             y_offset = 2
         plt.scatter(principal_actigraphy_Df.loc[i, f'principal component {component+1}'], y_offset, 
                     c=color, s=50)
+        
     
     # Manually create a legend
     neg1 = mlines.Line2D([], [], color='purple', marker='o', ls='', label='SBS -1')

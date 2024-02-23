@@ -8,15 +8,19 @@ from matplotlib import pyplot as plt
 import tsfel
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from scipy.stats import pearsonr
 import matplotlib.lines as mlines
 from scipy.io import loadmat
+from operator import itemgetter
+from math import isnan
 import Actigraph_Metrics
 
 #%%
 # Load Data
 os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9')
 
-filename = 'pt9_win5_5.mat'
+filename = 'Patient9_5MIN_DSW_AllSBS.mat'
+#filename = 'pt9_win5_5.mat'
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
 
@@ -32,7 +36,7 @@ for i in range(x_mag.shape[0]):
     features = tsfel.time_series_features_extractor(cfg_file, signal, fs=100, verbose=0)
     features_list.append(features)
     sbs_list.append(SBS[0][i])
-
+print((features_list))
 #%%
 # Convert features and SBS scores to DataFrame
 features_array = np.array(features_list).reshape(-1, 389)
@@ -47,15 +51,58 @@ x = df_features.values
 y = df['SBS'].values
 
 #%%
+# Pearson Correlation
+CCoeff = []
+
+# Iterate over each column (feature) in the DataFrame df_features
+for column in df_features.columns:
+    # Calculate Pearson correlation coefficient between the feature and target variable
+    corr, _ = pearsonr(df_features[column], sbs_list)
+    # Append the absolute value of correlation coefficient to CCoeff
+    CCoeff.append(abs(corr))
+    
+my_dict = dict(zip(df_features.columns, CCoeff))
+clean_dict = filter(lambda k: not isnan(my_dict[k]), my_dict)
+clean_dict = {k: my_dict[k] for k in my_dict if not isnan(my_dict[k])}
+#Retrieve N features with best correlation coefficient
+# Initialize N
+N = 10
+res = dict(sorted(clean_dict.items(), key=itemgetter(1), reverse=True)[:N])
+# printing result
+print("The top N value pairs are " + str(res))
+
+selected_features = df_features[list(res.keys())]
+scaler = StandardScaler()
+x = scaler.fit_transform(selected_features)
+
+values_list = list(res.keys())
+
+print("List of all values:")
+print(values_list)
+#%%
 # Normalize features
+x = df.iloc[:, 1:].values
 x_normalized = StandardScaler().fit_transform(x)
 df_normalized = pd.DataFrame(x_normalized, columns=df_features.columns)
+# x = df_normalized
 
 # Calculate variance of each normalized feature
 normalized_feature_variances = df_normalized.var()
 
 # Select top 10 features with highest variance
 x = df_normalized[normalized_feature_variances.nlargest(10).index].values
+x_names = df_normalized[normalized_feature_variances.nlargest(10).index]
+
+#%%
+# Get Feature Names
+y = x_names.iloc[0]
+feature_names_list = [feature.split()[-1] for feature in y.index]
+# feature_names_list = values_list
+for i, df in enumerate(features_list):
+    first_row = df.iloc[0]
+stripped_feature_names_list = [feature.replace("feature_", "") for feature in feature_names_list]
+for feature_name in stripped_feature_names_list:
+    print(f"Feature name: {first_row.index[int(feature_name)]}")
 
 #%%
 # Perform PCA
@@ -73,7 +120,7 @@ for component in range(pca_actigraphy.n_components_):
     plt.ylabel('Principal Component - {}'.format(component+2), fontsize=12)
     plt.title("Principal Component Analysis of Actigraphy and SBS", fontsize=14)
     
-    for i in range(len(df['SBS'])):
+    for i in range(len(df_sbs)):
         if df['SBS'][i] == -1:
             color = 'purple'
         elif df['SBS'][i] == 0:

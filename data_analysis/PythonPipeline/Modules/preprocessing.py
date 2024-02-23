@@ -4,13 +4,19 @@ import numpy as np
 import os
 from scipy.io import savemat
 # import tsfel
+import sys
+# os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\Modules')
+import sysconfig;
+#Where python looks for libraries
+print(sysconfig.get_paths()["purelib"])
 #%%
-x_data = pd.read_csv('./Patient9_Data_Set1.csv')
+x_data = pd.read_csv('./Patient11_FullSBS.csv')
+#x_data = pd.read_csv('./Users/jakes/Documents/DT 6 Analysis/PythonCode/Patient9_Data_Set1')
 #%%
-sbs_score = pd.read_excel('./Patient_9_SBS_Scores.xlsx', header=2, usecols='A:C')
+sbs_score = pd.read_excel('./Patient11_SBS_Scores.xlsx', header=2, usecols='A:C')
 #%%
 sbs_score['dts'] = pd.to_datetime(sbs_score['Time_uniform'], format='%m/%d/%Y %H:%M:%S %p')
-x_data['dts'] = pd.to_datetime(x_data['time'], format='%Y-%m-%d %H:%M:%S.%f')
+x_data['dts'] = pd.to_datetime(x_data['time'], format='mixed')
 #%%
 acc = x_data[['X', 'Y', 'Z']]
 mag = np.linalg.norm(acc, axis=1)
@@ -29,12 +35,11 @@ for index, row in sbs_score.iterrows():
     if x_mag.shape[0] > 0:
         x_.append(x_mag[:59899]) #min length of all x_mag
         y.append(row['SBS'])
-    
-
 #%%
 x_mag_data = np.vstack(x_)
 sbs_data = np.array(y)
-
 # %%
-savemat('pt9_win5_5.mat', dict([('x_mag', x_mag_data), ('sbs', sbs_data)]))
+os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9')
+# os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
+savemat('Patient11_5MIN_DSW_AllSBS.mat', dict([('x_mag', x_mag_data), ('sbs', sbs_data)]))
 # %%
