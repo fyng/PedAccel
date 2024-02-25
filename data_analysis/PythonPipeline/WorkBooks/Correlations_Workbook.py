@@ -22,9 +22,12 @@ import os
 import Actigraph_Metrics
 import tsfel
 from scipy.stats import pearsonr
+<<<<<<< HEAD
 from scipy.stats import spearmanr
 from scipy.stats import kendalltau
 import seaborn as sns
+=======
+>>>>>>> 43ec85b35e0a7fb0d1653939e248324915c36bc8
 
 # Load Data
 os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
@@ -33,8 +36,11 @@ filename = 'pt9_5min_twoside.mat'
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 43ec85b35e0a7fb0d1653939e248324915c36bc8
 #%%
 # Generate configuration file for feature extraction
 cfg_file = tsfel.get_features_by_domain()
@@ -86,6 +92,7 @@ res = dict(sorted(clean_dict.items(), key=itemgetter(1), reverse=True)[:N])
 
 # printing result
 print("The top N value pairs are " + str(res))
+<<<<<<< HEAD
 #_________________________________________________________________________________
 y = list(res.keys())
 x = list(res.values()) #price
@@ -191,3 +198,5 @@ two = mlines.Line2D([], [], color='red', marker='o', ls='', label='SBS 2')
 plt.legend(handles=[neg1, zero, one, two])
 plt.show()
 """
+=======
+>>>>>>> 43ec85b35e0a7fb0d1653939e248324915c36bc8
