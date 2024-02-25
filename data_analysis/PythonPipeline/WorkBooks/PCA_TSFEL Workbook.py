@@ -92,10 +92,12 @@ normalized_feature_variances = df_normalized.var()
 # Select top 10 features with highest variance
 x = df_normalized[normalized_feature_variances.nlargest(10).index].values
 x_names = df_normalized[normalized_feature_variances.nlargest(10).index]
+# print(x_names)
 
 #%%
 # Get Feature Names
 y = x_names.iloc[0]
+print(y)
 feature_names_list = [feature.split()[-1] for feature in y.index]
 # feature_names_list = values_list
 for i, df in enumerate(features_list):
