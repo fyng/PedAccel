@@ -2,7 +2,7 @@
 #give PCA access to modules folder
 import sys
 # caution: path[0] is reserved for script path (or '' in REPL)
-sys.path.insert(1, r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\Modules")
+sys.path.insert(1, r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\Modules")
 print(sys.version) 
 import sysconfig; 
 #Print where python looks for packages and where packages are downloaded. pip -V is where pip is installed to. 
@@ -22,25 +22,19 @@ import os
 import Actigraph_Metrics
 import tsfel
 from scipy.stats import pearsonr
-<<<<<<< HEAD
 from scipy.stats import spearmanr
 from scipy.stats import kendalltau
 import seaborn as sns
-=======
->>>>>>> 43ec85b35e0a7fb0d1653939e248324915c36bc8
 
 # Load Data
-os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
+os.chdir(r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9")
 #%%
 filename = 'pt9_5min_twoside.mat'
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
 
-<<<<<<< HEAD
 
 
-=======
->>>>>>> 43ec85b35e0a7fb0d1653939e248324915c36bc8
 #%%
 # Generate configuration file for feature extraction
 cfg_file = tsfel.get_features_by_domain()
@@ -51,7 +45,7 @@ print(x_mag.shape)
 features_list = []
 sbs_list = []
 for i in range(x_mag.shape[0]):
-    signal = Actigraph_Metrics.VecMag_MAD(x_mag[i,:],100,threshold = False)
+    signal = Actigraph_Metrics.VecMag_MAD(x_mag[i,:],100)
     #signal = np.array(x_mag[i,:])-1
     #signal = x_mag[i,:]
     features = tsfel.time_series_features_extractor(cfg_file, signal, fs=100, verbose=0)
@@ -92,8 +86,10 @@ res = dict(sorted(clean_dict.items(), key=itemgetter(1), reverse=True)[:N])
 
 # printing result
 print("The top N value pairs are " + str(res))
-<<<<<<< HEAD
 #_________________________________________________________________________________
+#Plot a histogram
+
+
 y = list(res.keys())
 x = list(res.values()) #price
  
@@ -198,5 +194,3 @@ two = mlines.Line2D([], [], color='red', marker='o', ls='', label='SBS 2')
 plt.legend(handles=[neg1, zero, one, two])
 plt.show()
 """
-=======
->>>>>>> 43ec85b35e0a7fb0d1653939e248324915c36bc8
