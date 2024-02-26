@@ -29,7 +29,7 @@ import seaborn as sns
 # Load Data
 os.chdir(r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9")
 #%%
-filename = 'Patient11_5MIN_DSW_AllSBS.mat'
+filename = 'Patient9_5MIN_DSW_AllSBS.mat'
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
 
@@ -66,11 +66,13 @@ for i in range(x_mag.shape[0]):
     AUC.append(Actigraph_Metrics.calc_area_under_curve(x,signal))
     PEAK_PEAK.append(max(signal)-min(signal))
     
+#define threshold
+threshold = .0025
 #Populate array with changes in SBS
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = Mean[i] - Mean[i+1]
-    if(state1 >= 0):
+    if(state1 >= 0+threshold):
         Mean_Changes.append(1)
     else: 
         Mean_Changes.append(0)
@@ -82,7 +84,7 @@ print(f"Percentage of same changes with Mean is: {100*(count/len(SBS_Changes))}%
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = PEAK_PEAK[i] - PEAK_PEAK[i+1]
-    if(state1 >= 0):
+    if(state1 >= 0+threshold):
         PEAK_PEAK_Changes.append(1)
     else: 
         PEAK_PEAK_Changes.append(0)
@@ -94,7 +96,7 @@ print(f"Percentage of same changes with Peak to Peak is: {100*(count/len(SBS_Cha
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = AUC[i] - AUC[i+1]
-    if(state1 >= 0):
+    if(state1 >= 0 + threshold):
         AUC_Changes.append(1)
     else: 
         AUC_Changes.append(0)
