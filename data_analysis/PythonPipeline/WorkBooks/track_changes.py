@@ -49,9 +49,9 @@ Mean = []
 for i in range(len(SBS[0])-1):
     state = SBS[0][i]-SBS[0][i+1]
     if(state >= 0):
-        SBS_Changes.append(1)
+        SBS_Changes.append(-1)
     else: 
-        SBS_Changes.append(0)
+        SBS_Changes.append(1)
 print(SBS_Changes)
 
 #Generate Peak to peak, mean, auc data
@@ -73,9 +73,9 @@ count = 0
 for i in range(len(SBS[0])-1):
     state1 = Mean[i] - Mean[i+1]
     if(state1 >= 0+threshold):
-        Mean_Changes.append(1)
+        Mean_Changes.append(-1)
     else: 
-        Mean_Changes.append(0)
+        Mean_Changes.append(1)
     if(Mean_Changes[i] == SBS_Changes[i]):
         count+=1
 print(f"Percentage of same changes with Mean is: {100*(count/len(SBS_Changes))}%")
@@ -85,9 +85,9 @@ count = 0
 for i in range(len(SBS[0])-1):
     state1 = PEAK_PEAK[i] - PEAK_PEAK[i+1]
     if(state1 >= 0+threshold):
-        PEAK_PEAK_Changes.append(1)
+        PEAK_PEAK_Changes.append(-1)
     else: 
-        PEAK_PEAK_Changes.append(0)
+        PEAK_PEAK_Changes.append(1)
     if(PEAK_PEAK_Changes[i] == SBS_Changes[i]):
         count+=1
 print(f"Percentage of same changes with Peak to Peak is: {100*(count/len(SBS_Changes))}%")
@@ -97,9 +97,9 @@ count = 0
 for i in range(len(SBS[0])-1):
     state1 = AUC[i] - AUC[i+1]
     if(state1 >= 0 + threshold):
-        AUC_Changes.append(1)
+        AUC_Changes.append(-1)
     else: 
-        AUC_Changes.append(0)
+        AUC_Changes.append(1)
     if(AUC_Changes[i] == SBS_Changes[i]):
         count+=1
 print(f"Percentage of same changes with AUC is: {100*(count/len(SBS_Changes))}%")
