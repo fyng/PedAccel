@@ -32,7 +32,11 @@ import seaborn as sns
 # os.chdir(r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9")
 os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9')
 #%%
+<<<<<<< HEAD
 filename = 'Patient9_5MIN_SW_AllSBS.mat'
+=======
+filename = 'Patient9_5MIN_DSW_AllSBS.mat'
+>>>>>>> 6d404ac124b57d81c191db4ec435989b2ff8153e
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
 
@@ -53,9 +57,9 @@ Mean = []
 for i in range(len(SBS[0])-1):
     state = SBS[0][i]-SBS[0][i+1]
     if(state >= 0):
-        SBS_Changes.append(1)
+        SBS_Changes.append(-1)
     else: 
-        SBS_Changes.append(0)
+        SBS_Changes.append(1)
 print(SBS_Changes)
 
 #Generate Peak to peak, mean, auc data
@@ -70,14 +74,16 @@ for i in range(x_mag.shape[0]):
     AUC.append(Actigraph_Metrics.calc_area_under_curve(x,signal))
     PEAK_PEAK.append(max(signal)-min(signal))
     
+#define threshold
+threshold = .0025
 #Populate array with changes in SBS
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = Mean[i] - Mean[i+1]
-    if(state1 >= 0):
-        Mean_Changes.append(1)
+    if(state1 >= 0+threshold):
+        Mean_Changes.append(-1)
     else: 
-        Mean_Changes.append(0)
+        Mean_Changes.append(1)
     if(Mean_Changes[i] == SBS_Changes[i]):
         count+=1
 print(f"Percentage of same changes with Mean is: {100*(count/len(SBS_Changes))}%")
@@ -86,10 +92,10 @@ print(f"Percentage of same changes with Mean is: {100*(count/len(SBS_Changes))}%
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = PEAK_PEAK[i] - PEAK_PEAK[i+1]
-    if(state1 >= 0):
-        PEAK_PEAK_Changes.append(1)
+    if(state1 >= 0+threshold):
+        PEAK_PEAK_Changes.append(-1)
     else: 
-        PEAK_PEAK_Changes.append(0)
+        PEAK_PEAK_Changes.append(1)
     if(PEAK_PEAK_Changes[i] == SBS_Changes[i]):
         count+=1
 print(f"Percentage of same changes with Peak to Peak is: {100*(count/len(SBS_Changes))}%")
@@ -98,10 +104,10 @@ print(f"Percentage of same changes with Peak to Peak is: {100*(count/len(SBS_Cha
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = AUC[i] - AUC[i+1]
-    if(state1 >= 0):
-        AUC_Changes.append(1)
+    if(state1 >= 0 + threshold):
+        AUC_Changes.append(-1)
     else: 
-        AUC_Changes.append(0)
+        AUC_Changes.append(1)
     if(AUC_Changes[i] == SBS_Changes[i]):
         count+=1
 print(f"Percentage of same changes with AUC is: {100*(count/len(SBS_Changes))}%")
