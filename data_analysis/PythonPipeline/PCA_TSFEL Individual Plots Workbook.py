@@ -1,6 +1,4 @@
 #%%
-import sys
-sys.path.insert(0, r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\Modules')
 import os
 import pandas as pd
 import numpy as np
@@ -10,15 +8,18 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import matplotlib.lines as mlines
 from scipy.io import loadmat
-import Actigraph_Metrics
+
+from Modules import Actigraph_Metrics
 
 #%%
 # Load Data
-os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9')
-
+data_dir = './PatientData/9'
 filename = 'Patient9_5MIN_DSW_AllSBS.mat'
-x_mag = (loadmat(filename)["x_mag"])
-SBS = loadmat(filename)["sbs"]
+fp = os.path.join(data_dir, filename)
+
+data = loadmat(fp)
+x_mag = data["x_mag"]
+SBS = data["sbs"]
 
 # Generate configuration file for feature extraction
 cfg_file = tsfel.get_features_by_domain()

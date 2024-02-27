@@ -1,38 +1,28 @@
 #%%
-#give PCA access to modules folder
-import sys
-# caution: path[0] is reserved for script path (or '' in REPL)
-sys.path.insert(1, r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\Modules")
-print(sys.version) 
-import sysconfig; 
-#Print where python looks for packages and where packages are downloaded. pip -V is where pip is installed to. 
-#pip show 'package name'
-print(sysconfig.get_paths()["purelib"])
-#use pip install --target=C:\Users\jakes\.virtualenvs\DT6Analysis\Lib\site-packages package name to install to specific folder
-from operator import itemgetter
-from math import isnan
+from pathlib import Path
+from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
-from matplotlib import pyplot as plt
-from sklearn.decomposition import PCA
-from sklearn.preprocessing import StandardScaler
-import matplotlib.lines as mlines
+import math
 from scipy.io import loadmat
-import os
-import Actigraph_Metrics
-import tsfel
 from scipy.stats import pearsonr
 from scipy.stats import spearmanr
 from scipy.stats import kendalltau
-import seaborn as sns
+import tsfel
+from operator import itemgetter
+
+from Modules import Actigraph_Metrics
 
 # Load Data
-os.chdir(r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9")
-#%%
+data_dir = './PatientData/9'
 filename = 'pt9_5min_twoside.mat'
-x_mag = (loadmat(filename)["x_mag"])
-SBS = loadmat(filename)["sbs"]
 
+data_path = Path(data_dir)
+fp = data_path/filename
+data = loadmat(fp)
+
+x_mag = data["x_mag"]
+SBS = data["sbs"]
 
 
 #%%
@@ -72,9 +62,9 @@ for i in columns:
 my_dict = dict(zip(list(columns), list(CCoeff)))
 
 # functional
-clean_dict = filter(lambda k: not isnan(my_dict[k]), my_dict)
+clean_dict = filter(lambda k: not math.isnan(my_dict[k]), my_dict)
 # dict comprehension
-clean_dict = {k: my_dict[k] for k in my_dict if not isnan(my_dict[k])}
+clean_dict = {k: my_dict[k] for k in my_dict if not math.isnan(my_dict[k])}
 
 #Retrieve N features with best correlation coefficient  
 # Initialize N

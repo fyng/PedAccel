@@ -3,10 +3,10 @@
 #Import Necessary Libraries
 import pandas as pd
 import numpy as np
-import Actigraph_Metrics
-import General_Functions
 from matplotlib import pyplot as plt
 import random
+
+from Modules import Actigraph_Metrics, General_Functions
 
 if __name__ == "__main__":
 

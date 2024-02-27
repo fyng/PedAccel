@@ -13,6 +13,8 @@ import scipy
 import random
 from scipy.fftpack import fft, fftfreq
 
+from Modules import General_Functions, Frequency_Domain
+
 
 print("This file __name__ is set to: {}" .format(__name__))
 

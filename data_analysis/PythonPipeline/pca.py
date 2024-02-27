@@ -6,7 +6,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 import matplotlib.lines as mlines
 from scipy.io import loadmat
-
 import tsfresh
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -20,7 +19,6 @@ filename = 'pt9_win5_5.mat'
 data_path = Path(data_dir)
 fp = data_path/filename
 data = loadmat(fp)
-
 
 x_mag = data["x_mag"]
 SBS = data["sbs"]

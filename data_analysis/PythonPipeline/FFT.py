@@ -4,10 +4,9 @@ import numpy as np
 from matplotlib import pyplot as plt
 from scipy.io import loadmat
 import os
-import sys
 
 # Load Data
-data_dir = '../PatientData/Patient9'
+data_dir = './PatientData/Patient9'
 filename = 'pt9_win5_5.mat'
 
 fp = os.path.join(data_dir, filename)

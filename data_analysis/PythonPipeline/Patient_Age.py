@@ -2,11 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-# Read patient data from Excel file
-os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData')
+data_dir = './PatientData/Patient9'
 filename = "Patient_Age.xlsx"  # Update with the path to your Excel file
-df = pd.read_excel(filename)
+fp = os.path.join(data_dir, filename)
 
+df = pd.read_excel(filename)
 # Extract ages from a specific column (assuming column name is 'Age')
 ages = df['Age (months)']
 
