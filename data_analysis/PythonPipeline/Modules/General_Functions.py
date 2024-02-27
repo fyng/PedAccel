@@ -6,7 +6,6 @@ from colorcet import fire
 from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
-import xarray as xr
 import datashader as ds
 import datashader.transfer_functions as tf
 

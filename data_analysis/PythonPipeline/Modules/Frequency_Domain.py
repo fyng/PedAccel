@@ -9,7 +9,6 @@ from scipy.signal import butter, sosfilt, sosfreqz
 import pywt #installed package name is pywavelets
 
 
-
 def butter_bandpass(lowcut, highcut, sr, order=20):
     """
     :param lowcut: Lower cutoff frequency
