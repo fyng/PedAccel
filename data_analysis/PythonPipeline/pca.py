@@ -1,34 +1,29 @@
 #This Script generates a Principle Component Analysis Plot
-
-
 #give PCA access to modules folder
-import sys
-# caution: path[0] is reserved for script path (or '' in REPL)
-sys.path.insert(1, r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\Modules")
-sys.path.insert(1, r"C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\Modules")
-
-
-#Import Necessary Libraries
-import Actigraph_Metrics
-import Smoothing_Functions
+from pathlib import Path
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.lines as mlines
+from scipy.io import loadmat
+
 import tsfresh
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-import matplotlib.lines as mlines
-from scipy.io import loadmat
-import os
 
-#Load Data
-os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
-# os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
+from Modules import Actigraph_Metrics, Smoothing_Functions
 
+# Load Data
+data_dir = './PatientData/9'
 filename = 'pt9_win5_5.mat'
-x_mag = (loadmat(filename)["x_mag"])
-SBS = loadmat(filename)["sbs"]
 
+data_path = Path(data_dir)
+fp = data_path/filename
+data = loadmat(fp)
+
+
+x_mag = data["x_mag"]
+SBS = data["sbs"]
 
 #Create feature arrays. To Do: Replace this with automatically generated 100 feature array. 
 sbs = []
