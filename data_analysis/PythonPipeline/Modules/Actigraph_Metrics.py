@@ -5,8 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 from scipy import stats
-import skdh #Scikit-Digital-Health for pip install
-import Smoothing_Functions
+# import skdh #Scikit-Digital-Health for pip install
 import pandas as pd
 import tsfel
 from sklearn.decomposition import PCA
@@ -22,7 +21,7 @@ def calc_area_under_curve(x,y):
         :param x: x data
         :param y: y data
         :return: Area under the curve (an integration of the data)
-        """
+    """
     return np.trapz(y, x, dx=.005, axis=-1)
 
 
@@ -34,9 +33,9 @@ def Scipy_find_peaks(x):
     """
     #Prominence is most important parameter, but others should be explored
     peaks, _ = scipy.signal.find_peaks(x, prominence=1) 
-    plt.plot(peaks, x[peaks], "ob");
+    plt.plot(peaks, x[peaks], "ob")
     print(f'number of peaks for prominence parameter is {len(peaks)}')
-    plt.plot(x);
+    plt.plot(x)
     plt.show()
     return len(peaks)
 
@@ -65,18 +64,19 @@ def VecMag_MAD(signal,wlen = 100):
     return MAD
 
 ##Generated MAD data from triaxial raw data 
-def skdh_MAD(sliced_data,wlen = 100):
-    shape = (len(sliced_data['X']), 3)
-    arr = np.ones(shape)
-    arr[0:,0] = sliced_data['X']
-    arr[0:, 1] = sliced_data['Y']
-    arr[0:, 2] = sliced_data['Z']
-    accel = arr
-    MAD = skdh.activity.metric_mad(accel, wlen)
-    myX = []
-    for i in range(len(MAD)):
-        myX.append(i)
-    return myX, MAD
+# skdh seems to be in active development and there's no documentations, let's move away for now
+# def skdh_MAD(sliced_data,wlen = 100):
+#     shape = (len(sliced_data['X']), 3)
+#     arr = np.ones(shape)
+#     arr[0:,0] = sliced_data['X']
+#     arr[0:, 1] = sliced_data['Y']
+#     arr[0:, 2] = sliced_data['Z']
+#     accel = arr
+#     MAD = skdh.activity.metric_mad(accel, wlen)
+#     myX = []
+#     for i in range(len(MAD)):
+#         myX.append(i)
+#     return myX, MAD
 
 #Calculates simple signal to noise ratio
 def Signal_To_Noise_Ratio(signal):
