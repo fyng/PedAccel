@@ -107,10 +107,6 @@ for i in range(len(SBS[0])-1):
         AUC_Changes.append(1)
     if(AUC_Changes[i] == SBS_Changes[i]):
         count+=1
-<<<<<<< HEAD
-print(f"Percentage of same changes with AUC is: {100*(count/len(SBS_Changes))}%")
-=======
 print(f"Percentage of same changes with AUC is: {100*(count/len(SBS_Changes))}%")
 
 # %%
->>>>>>> 8f83a2d54a19981b975be8ab553c674510ecd8d0

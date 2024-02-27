@@ -13,7 +13,7 @@ print(sysconfig.get_paths()["purelib"])
 x_data = pd.read_csv('./Patient9_FullSBS.csv')
 #x_data = pd.read_csv('./Users/jakes/Documents/DT 6 Analysis/PythonCode/Patient9_Data_Set1')
 #%%
-sbs_score = pd.read_excel('./Patient9_SBS_Scores.xlsx', header=2, usecols='A:C')
+sbs_score = pd.read_excel('./Patient_9_SBS_Scores.xlsx', header=2, usecols='A:C')
 #%%
 sbs_score['dts'] = pd.to_datetime(sbs_score['Time_uniform'], format='%m/%d/%Y %H:%M:%S %p')
 x_data['dts'] = pd.to_datetime(x_data['time'], format='mixed')
