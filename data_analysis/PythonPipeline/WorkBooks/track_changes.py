@@ -2,7 +2,9 @@
 #give PCA access to modules folder
 import sys
 # caution: path[0] is reserved for script path (or '' in REPL)
-sys.path.insert(1, r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\Modules")
+# sys.path.insert(1, r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\Modules")
+sys.path.insert(0, r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\Modules')
+
 print(sys.version) 
 import sysconfig; 
 #Print where python looks for packages and where packages are downloaded. pip -V is where pip is installed to. 
@@ -27,9 +29,11 @@ from scipy.stats import kendalltau
 import seaborn as sns
 
 # Load Data
-os.chdir(r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9")
+# os.chdir(r"C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9")
+os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9')
 #%%
-filename = 'Patient9_5MIN_DSW_AllSBS.mat'
+filename = 'Patient9_5MIN_SW_AllSBS.mat'
+
 x_mag = (loadmat(filename)["x_mag"])
 SBS = loadmat(filename)["sbs"]
 
@@ -45,6 +49,7 @@ Mean_Changes = []
 AUC = []
 PEAK_PEAK = []
 Mean = []
+
 #Populate array with changes in SBS
 for i in range(len(SBS[0])-1):
     state = SBS[0][i]-SBS[0][i+1]
@@ -102,4 +107,10 @@ for i in range(len(SBS[0])-1):
         AUC_Changes.append(1)
     if(AUC_Changes[i] == SBS_Changes[i]):
         count+=1
+<<<<<<< HEAD
 print(f"Percentage of same changes with AUC is: {100*(count/len(SBS_Changes))}%")
+=======
+print(f"Percentage of same changes with AUC is: {100*(count/len(SBS_Changes))}%")
+
+# %%
+>>>>>>> 8f83a2d54a19981b975be8ab553c674510ecd8d0
