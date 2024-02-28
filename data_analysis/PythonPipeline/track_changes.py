@@ -50,7 +50,7 @@ AUC = []
 PEAK_PEAK = []
 Mean = []
 
-#Populate array with changes in SBS
+# Populate array with changes in SBS
 for i in range(len(SBS[0])-1):
     state = SBS[0][i]-SBS[0][i+1]
     if(state > 0):
@@ -71,9 +71,9 @@ for i in range(x_mag.shape[0]):
     AUC.append(Actigraph_Metrics.calc_area_under_curve(x,signal))
     PEAK_PEAK.append(max(signal)-min(signal))
     
-#define threshold
+# define threshold
 threshold = .0025
-#Populate array with changes in SBS
+# Populate array with changes in SBS
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = Mean[i] - Mean[i+1]
@@ -85,7 +85,7 @@ for i in range(len(SBS[0])-1):
         count+=1
 print(f"Percentage of same changes with Mean is: {100*(count/len(SBS_Changes))}%")
 
-#Populate array with changes in SBS
+# Populate array with changes in SBS
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = PEAK_PEAK[i] - PEAK_PEAK[i+1]
@@ -97,7 +97,7 @@ for i in range(len(SBS[0])-1):
         count+=1
 print(f"Percentage of same changes with Peak to Peak is: {100*(count/len(SBS_Changes))}%")
 
-#Populate array with changes in SBS
+# Populate array with changes in SBS
 count = 0
 for i in range(len(SBS[0])-1):
     state1 = AUC[i] - AUC[i+1]
