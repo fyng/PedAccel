@@ -24,8 +24,10 @@ def ordinal_labels(y, num_classes = None):
 X = loadmat('../DONOTPUSH/data.mat')['X']
 #%%
 y = loadmat('../DONOTPUSH/data.mat')['y']
-y[y < -2] = -2
-y= y+2
+y[y == -1] = 0
+y[y < -1] = -1
+y[y > 1] = 1
+y= y+1
 ids = loadmat('../DONOTPUSH/data.mat')['group']
 #%%
 selected = np.squeeze(y != y.round)
@@ -48,7 +50,7 @@ features = features.columns.to_list()
 # %%
 x_features = x_features.reshape(x_features.shape[0], -1)
 X = np.concatenate((x_features, X[:, 3, :].mean(axis = 1)[:, None]), axis=1)
-y = ordinal_labels(np.squeeze(y).reshape(-1, 1),5)
+y = ordinal_labels(np.squeeze(y).reshape(-1, 1),3)
 # %%
 labels = ['HR', 'RR', 'SPO2']
 all_features = []
@@ -76,7 +78,7 @@ for repeat in range(10):
         scaler = preprocessing.StandardScaler()
         x_train = scaler.fit_transform(x_train_data)
         x_test = scaler.transform(x_test_data)
-        print(x_train.shape)
+
         filename = folder + (f"fold{i}.mat")
         savemat(filename, {'X_train':x_train, 'y_train':y_train_data, 'X_test':x_test, 'y_test':y_test_data})
 # %%

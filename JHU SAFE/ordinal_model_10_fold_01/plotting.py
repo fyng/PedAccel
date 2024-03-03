@@ -1,8 +1,8 @@
 #%%
 from scipy.io import loadmat, savemat
 import matplotlib.pyplot as plt
-from sklearn import metrics
 import seaborn as sns
+from sklearn import metrics
 import numpy as np
 import pandas as pd
 #%%
@@ -42,16 +42,10 @@ fig.savefig(folder + "overall.png")
 folder = "results/"
 cnf = metrics.confusion_matrix(y_trues, y_preds)
 cnf_pct = cnf / cnf.sum()
-
-off_diag_mask = np.eye(*cnf_pct.shape, dtype=bool)
-vmin = cnf_pct.min()
-vmax = cnf_pct.max()
-
-fig = plt.figure()
-sns.heatmap(cnf_pct, annot=True, mask=~off_diag_mask, cmap="Blues", vmin=vmin, vmax=vmax)
-sns.heatmap(cnf_pct, annot=True, mask=off_diag_mask, cmap="OrRd", vmin=vmin, vmax=vmax, cbar_kws=dict(ticks=[]))
+plot = sns.heatmap(cnf_pct, annot = True)
+fig = plot.get_figure()
 fig.savefig(folder + "confusion_matrix_percent.png")
-plt.close(fig)
+
 #%%
 folder = "results/"
 cnf = metrics.confusion_matrix(y_trues, y_preds)

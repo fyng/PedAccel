@@ -25,6 +25,7 @@ X = loadmat('../DONOTPUSH/data.mat')['X']
 #%%
 y = loadmat('../DONOTPUSH/data.mat')['y']
 y[y < -2] = -2
+y[y > 1] = 1
 y= y+2
 ids = loadmat('../DONOTPUSH/data.mat')['group']
 #%%
@@ -48,7 +49,7 @@ features = features.columns.to_list()
 # %%
 x_features = x_features.reshape(x_features.shape[0], -1)
 X = np.concatenate((x_features, X[:, 3, :].mean(axis = 1)[:, None]), axis=1)
-y = ordinal_labels(np.squeeze(y).reshape(-1, 1),5)
+y = ordinal_labels(np.squeeze(y).reshape(-1, 1),4)
 # %%
 labels = ['HR', 'RR', 'SPO2']
 all_features = []

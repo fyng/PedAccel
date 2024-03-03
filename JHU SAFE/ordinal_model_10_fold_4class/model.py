@@ -93,8 +93,7 @@ for repeat in range(10):
 
         with torch.no_grad():
             y_prob_fixed = model(torch.Tensor(X_test))
-            #Y_hat = (cpu(y_j_hat).data.numpy()> ordinal_thres).cumprod(axis = 1).sum(axis = 1)
-            y_te = (y_prob_fixed.detach().numpy() > 0.5).cumprod(axis = 1).sum(axis = 1)
+            y_te = (y_prob_fixed.detach().numpy() > 0.6).cumprod(axis = 1).sum(axis = 1)
             y_te[y_te < 0] = 0
             f1 = metrics.f1_score(y_test, y_te, average='macro')
             accuracy = metrics.accuracy_score(y_test, y_te)

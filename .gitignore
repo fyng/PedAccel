@@ -137,3 +137,4 @@ DONOTPUSH/
 *.mat
 *.csv
 *.png
+*.json

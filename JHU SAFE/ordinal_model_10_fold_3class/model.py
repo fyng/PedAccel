@@ -70,6 +70,7 @@ for repeat in range(10):
     Kappa = []
     y_true = []
     y_pred = []
+    importances = []
 
     for fold in range(10):
         data_folder = f'cv{repeat}/fold{fold}.mat'
@@ -88,7 +89,7 @@ for repeat in range(10):
         # training
         model = ordinal_regression(X_train.shape[1], y_train.shape[1])
         loss_c, loss_s,weights = training(model, X_train.astype('double'), y_train.astype('int16'), samples_weight,  10000)
-        importance = weights
+        importances.append(np.squeeze(weights))
 
         with torch.no_grad():
             y_prob_fixed = model(torch.Tensor(X_test))
@@ -117,5 +118,5 @@ for repeat in range(10):
 
     folder = "results/"
     filename = folder + (f"cv{repeat}.mat")
-    savemat(filename,  {'Acc':Acc, 'Spec':Spec, 'Sens':Sens, 'Kappa':Kappa, 'F1':F1, 'y_true':y_true, 'y_pred':y_pred})
+    savemat(filename,  {'Acc':Acc, 'Spec':Spec, 'Sens':Sens, 'Kappa':Kappa, 'F1':F1, 'y_true':y_true, 'y_pred':y_pred, 'importance':np.vstack(importances).mean(axis = 0)})
     # %%
