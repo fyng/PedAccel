@@ -10,10 +10,10 @@ import sysconfig;
 #Where python looks for libraries
 print(sysconfig.get_paths()["purelib"])
 #%%
-x_data = pd.read_csv('./Patient9_FullSBS.csv')
+x_data = pd.read_csv('./Patient9_Actigraphy.csv')
 #x_data = pd.read_csv('./Users/jakes/Documents/DT 6 Analysis/PythonCode/Patient9_Data_Set1')
 #%%
-sbs_score = pd.read_excel(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\9\Patient_9_SBS_Scores.xlsx', header=2, usecols='A:C')
+sbs_score = pd.read_excel(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9\Patient_9_SBS_Scores.xlsx', header=2, usecols='A:C')
 #%%
 sbs_score['dts'] = pd.to_datetime(sbs_score['Time_uniform'], format='%m/%d/%Y %H:%M:%S %p')
 x_data['dts'] = pd.to_datetime(x_data['time'], format='mixed')
@@ -29,7 +29,7 @@ y = []
 time = []
 for index, row in sbs_score.iterrows():
     sbs_time = row['dts']
-    sbs_time_start = sbs_time - pd.Timedelta(5, 'minutes')
+    sbs_time_start = sbs_time - pd.Timedelta(10, 'minutes')
     sbs_time_end = sbs_time + pd.Timedelta(0, 'minutes')
     conditions = (x_data['dts'] > sbs_time_start) & (x_data['dts'] < sbs_time_end)
     x_mag = x_data[conditions]['mag'].to_numpy()
@@ -44,5 +44,5 @@ time_data = np.array(time)
 # %%
 os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9')
 # os.chdir(r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\Data Analysis\PythonPipeline\PatientData\Patient9')
-savemat('Patient9_5MIN_SW_Time_AllSBS.mat', dict([('x_mag', x_mag_data), ('sbs', sbs_data), 'time', time_data]))
+savemat('Patient9_10MIN_SW_Time_AllSBS.mat', dict([('x_mag', x_mag_data), ('sbs', sbs_data), ('time', time_data)]))
 # %%
