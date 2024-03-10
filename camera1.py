@@ -73,7 +73,7 @@ while cap.isOpened():
         cv2.imshow("frame", frame)
 
         # Check if it's time to start a new video file (every 600 seconds)
-        if time.time() - start > 600:
+        if time.time() - start > 60:
             start = time.time()
             video_file_count += 1
 
