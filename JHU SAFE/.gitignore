@@ -1,0 +1,8 @@
+ordinal_model/fold1.mat
+data_exploration/images/
+data_exploration/images_highres/
+data_exploration/images_sbs/
+data_exploration/images_change/
+data_exploration/images_max_win_60/
+data_exploration/images_*
+linear_model/images_*

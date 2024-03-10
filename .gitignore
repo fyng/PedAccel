@@ -133,3 +133,8 @@ dmypy.json
 
 # DO NOT PUSH
 DONOTPUSH/
+.Rproj.user
+*.mat
+*.csv
+*.png
+*.json
