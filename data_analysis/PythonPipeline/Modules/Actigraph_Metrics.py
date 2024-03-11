@@ -81,11 +81,11 @@ def Signal_To_Noise_Ratio(signal):
     mean = np.mean(signal)
     return mean/std
 
-def Feature_Extraction(location, filename):
-    os.chdir(location)
-
-    x_mag = (loadmat(filename)["x_mag"])
-    SBS = loadmat(filename)["sbs"]
+def Feature_Extraction(location, filename, fs=100):
+    filepath = os.path.join(location, filename)
+    data = loadmat(filepath)
+    x_mag = data["x_mag"]
+    sbs = data["sbs"]
 
     # Generate configuration file for feature extraction
     cfg_file = tsfel.get_features_by_domain()
@@ -95,12 +95,17 @@ def Feature_Extraction(location, filename):
     features_list = []
     sbs_list = []
     for i in range(x_mag.shape[0]):
-        features = tsfel.time_series_features_extractor(cfg_file, x_mag[i, :], fs=100, verbose=0)
+        features = tsfel.time_series_features_extractor(cfg_file, x_mag[i, :], fs=fs, verbose=0)
         features_list.append(features)
-        sbs_list.append(SBS[0][i])
+        # FIXME: why are we only taking the first element of sbs?
+        sbs_list.append(sbs[0][i])
     
     # Convert features and SBS scores to DataFrame
+    # where did 389 cpme from?
     features_array = np.array(features_list).reshape(-1, 389)
+
+
+    # why are are making a dataframe that we are not using?
     df_features = pd.DataFrame(features_array)
     df_features.columns = ['feature_' + str(col) for col in df_features.columns]
 
