@@ -40,26 +40,23 @@ def Scipy_find_peaks(x):
     return len(peaks)
 
 #Generate MAD data...To Do: Double check this with the scipy version
-def VecMag_MAD(signal,wlen = 100):
+def VecMag_MAD(signal, window=100):
     """
+    Computes the Mean Absolute Deviation (MAD) of the vector magnitude data. The signal is chucked into windows (non-overlapping) and MAD is computed for each window.
+
     :param signal: Vector Magnitude Data to compute MAD for
     :param wlen: Length of window to generate a MAD data point for
-    :return: MAD data, has dimension len(signal)/wlen
+    :return: list of int. of length signal/wlen + 1
     """
-    r_avg = []
     MAD = []
-    
-    for i in range(int(len(signal)/wlen)):
-        #r_avg takes a window length and computes the average in that window of the vector magnitudes.'
-        #It is not a rolling average, and the end point of one window is the start point of the next. 
-        #It then repeats that average a window length number of times so that the raw data and r_avg data has the same number of points. 
-        #Ex) my array is [0,1,2,3,4,5,6,7,8] and wlen = 3, r_avg = [1,1,1,4,4,4,7,7,7]
-        slice = signal[i*wlen:(i+1)*wlen]
-        Mymean = np.mean(slice)
-        temp_r_avg = np.repeat(Mymean, wlen)
-        #MAD is the average of the absolute value of each vector magnitude sample minus the mean in each window
-        toMAD = (abs(slice-temp_r_avg))
-        MAD.append(np.mean(toMAD))
+    start_time = np.arange(0, len(signal), window)
+    for i in start_time[:-1]:
+        signal_window = signal[i:i + window]
+        MAD.append(scipy.stats.median_abs_deviation(signal_window, axis=0, nan_policy='propagate'))
+
+    # last window
+    signal_window = signal[start_time[-1]:]
+    MAD.append(scipy.stats.median_abs_deviation(signal_window, axis=0, nan_policy='propagate'))
 
     return MAD
 
