@@ -138,3 +138,5 @@ DONOTPUSH/
 *.csv
 *.png
 *.json
+*.xlsx
+*.gt3x
