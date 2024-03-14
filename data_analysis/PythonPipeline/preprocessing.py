@@ -1,57 +1,23 @@
-#%%
 import pandas as pd
 import numpy as np
 import os
 from scipy.io import savemat
-# import tsfel
-import sys
-os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\Modules')
+from Modules import preprocess
 
-import sysconfig;
-#Where python looks for libraries
-print(sysconfig.get_paths()["purelib"])
-#%%
-x_data = pd.read_csv('Patient9_Actigraphy.csv')
-#x_data = pd.read_csv('./Users/jakes/Documents/DT 6 Analysis/PythonCode/Patient9_Data_Set1')
-#%%
-sbs_score = pd.read_excel(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9\Patient_9_SBS_Scores.xlsx', header=2, usecols='A:C')
-#%%
-sbs_score['dts'] = pd.to_datetime(sbs_score['Time_uniform'], format='%m/%d/%Y %H:%M:%S %p')
-x_data['dts'] = pd.to_datetime(x_data['time'], format='mixed')
-print(sbs_score)
-#%%
-acc = x_data[['X', 'Y', 'Z']]
-mag = np.linalg.norm(acc, axis=1)
-x_data['mag'] = mag
-#%%
-sbs_score = sbs_score.dropna(axis = 0)
-print(len(sbs_score))
-#%%
-x_ = []
-y = []
-count = 0
-for index, row in sbs_score.iterrows():
-    sbs_time = row['dts']
-    sbs_time_start = sbs_time - pd.Timedelta(15, 'minutes')
-    sbs_time_end = sbs_time + pd.Timedelta(5, 'minutes')
-    conditions = (x_data['dts'] > sbs_time_start) & (x_data['dts'] < sbs_time_end)
-    x_mag = x_data[conditions]['mag'].to_numpy()
-    #print(len(x_mag))
-    if x_mag.shape[0] > 0:
-        count += 1
-        x_.append(x_mag[:119899]) #min length of all x_mag len(x_mag)
-        y.append(row['SBS'])
-        
-    else:
-        #print(len(x_mag))
-        print(sbs_time)
-print(count)
-#%%
-x_mag_data = np.vstack(x_)
-sbs_data = np.array(y)
-print(len(x_mag_data[0]))
-print(len(sbs_data))
-# %%
-os.chdir(r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData\Patient9')
-savemat('Patient9_10MIN_5MIN_DSW_AllSBS.mat', dict([('x_mag', x_mag_data), ('sbs', sbs_data)]))
-# %%
+# USAGE
+# pass in master directory of all patients
+# each patient needs to have its own directory
+
+# Within a patient directory, 
+# All patient files must be prefixed by their folder name. For example:
+# Patient9
+# |_Patient9_DataPt2.gt3x
+# |_Patient9__SBS_Scores.xlsx
+# Patient11
+# |_Patient11_DataPt2.gt3x
+# |_Patient11__SBS_Scores.xlsx
+
+# Profit
+
+data_dir = './PatientData/'
+preprocess.load_and_segment_data(data_dir)
