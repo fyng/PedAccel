@@ -140,5 +140,5 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
 
 if __name__ == '__main__':
     # here's a test
-    data_dir = '../PatientData/'
+    data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis'
     load_and_segment_data(data_dir)
