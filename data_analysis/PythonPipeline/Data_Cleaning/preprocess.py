@@ -36,7 +36,7 @@ def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
     2. the excel contains a column 'SBS'
     This is very fragile. We should consider the regularity of our excel formatting. 
     '''
-    df = pd.read_excel(sbs_filepath, header=2)
+    df = pd.read_excel(sbs_filepath, header=0)
     col_names = df.columns.values.tolist()
     if 'SBS' not in col_names:
         raise ValueError('SBS column not found in the excel file')
@@ -55,7 +55,6 @@ def load_csv_data():
     # would we ever use this?
     pass
 
-
 def load_mat_data():
     # would we ever use this?
     pass
@@ -72,7 +71,7 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
     |_Patient9_DataPt2.gt3x
     |_Patient9__SBS_Scores.xlsx
     Patient11
-    |_Patient11_DataPt2.gt3x
+    |_Patient11_AccelData.gt3x
     |_Patient11__SBS_Scores.xlsx
     '''
     # search for patient directories in the data directory
@@ -83,7 +82,7 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
             print('Processing:', patient)
 
             print('Loading actigraphy data')
-            actigraphy_filepath = os.path.join(patient_dir, patient + '_DataPt2.gt3x')
+            actigraphy_filepath = os.path.join(patient_dir, patient + '_AccelData.gt3x')
             if not os.path.isfile(actigraphy_filepath):
                 raise FileNotFoundError(f'Actigraphy file not found: {actigraphy_filepath}')
             acti_data, acti_names = load_gt3x_data(actigraphy_filepath)
@@ -104,7 +103,6 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
             # precompute start and end time for each SBS recording
             epic_data['start_time'] = epic_data['dts'] - pd.Timedelta(lead_time, 'minutes')
             epic_data['end_time'] = epic_data['dts'] + pd.Timedelta(window_size - lead_time, 'minutes')
-
 
             print('Processing')
             windows = []
@@ -137,8 +135,8 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
             save_file = os.path.join(patient_dir, filename)
             savemat(save_file, dict([('x_mag', x_mag), ('sbs', sbs)]))
 
-
 if __name__ == '__main__':
     # here's a test
-    data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis'
+    # data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis'
+    data_dir = r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData'
     load_and_segment_data(data_dir)
