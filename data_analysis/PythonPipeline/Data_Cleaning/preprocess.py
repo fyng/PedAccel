@@ -55,7 +55,6 @@ def load_csv_data():
     # would we ever use this?
     pass
 
-
 def load_mat_data():
     # would we ever use this?
     pass
@@ -72,7 +71,7 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
     |_Patient9_DataPt2.gt3x
     |_Patient9__SBS_Scores.xlsx
     Patient11
-    |_Patient11_DataPt2.gt3x
+    |_Patient11_AccelData.gt3x
     |_Patient11__SBS_Scores.xlsx
     '''
     # search for patient directories in the data directory
@@ -105,7 +104,6 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
             epic_data['start_time'] = epic_data['dts'] - pd.Timedelta(lead_time, 'minutes')
             epic_data['end_time'] = epic_data['dts'] + pd.Timedelta(window_size - lead_time, 'minutes')
 
-
             print('Processing')
             windows = []
             sbs = []
@@ -136,7 +134,6 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
             filename = f'{patient}_{lead_time}MIN_{window_size - lead_time}MIN.mat'
             save_file = os.path.join(patient_dir, filename)
             savemat(save_file, dict([('x_mag', x_mag), ('sbs', sbs)]))
-
 
 if __name__ == '__main__':
     # here's a test
