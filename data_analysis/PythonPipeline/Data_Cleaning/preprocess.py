@@ -68,7 +68,7 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
 
     All patient files must be prefixed by their folder name. For example:
     Patient9
-    |_Patient9_DataPt2.gt3x
+    |_Patient9_AccelData.gt3x
     |_Patient9__SBS_Scores.xlsx
     Patient11
     |_Patient11_AccelData.gt3x
@@ -137,6 +137,6 @@ def load_and_segment_data(data_dir, window_size=15, lead_time=10):
 
 if __name__ == '__main__':
     # here's a test
-    # data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis'
-    data_dir = r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData'
+    #data_dir = r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData'
+    data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData'
     load_and_segment_data(data_dir)
