@@ -10,6 +10,7 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 import Actigraph_Metrics
+import datetime
 
 def raw_accel_plot(sbs, signal, window_size, plot):
     '''
@@ -58,6 +59,37 @@ def mad_plot(sbs, x_mag, window_size, figure=None):
         # if not os.path.isdir(folder_path):
         #     os.makedirs(folder_path)
         # plt.savefig(os.path.join(folder_path, f'SBS_{sbs_value}_plot{count}.png'))
+        plt.show()
+        
+        count += 1
+        
+def signal_vs_time(signal, time, sbs, window_size):
+    if figure is None:
+        figure = plt.figure(figsize=(8, 6))
+    
+    # Accelerometry Sampling Frequency
+    freq = 100
+    
+    count = 0
+    
+    # Print Graph per SBS
+    for i, sbs_value in enumerate(sbs):
+        signal = signal[i,:]
+
+        t = np.arange(0, len(signal), step=window_size) / (freq * 60)
+        
+        # Plot MAD against time
+        plt.figure(figure.number)
+        plt.plot(t, signal, color='blue')
+        # SBS marker
+        plt.axvline(t[len(t)//2], color='red', linestyle='--')
+        plt.text(t[len(t)//2], 0.095, "SBS Score Recorded")
+
+        plt.ylim(0, 150)
+        plt.xlabel('Minutes')
+        plt.ylabel('Heart Rate (bpm)')    
+        plt.title(f'Heart Rate Signal vs Time at SBS={sbs_value}')
+
         plt.show()
         
         count += 1
