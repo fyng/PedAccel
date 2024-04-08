@@ -10,7 +10,7 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 import Actigraph_Metrics
-import datetime
+# import datetime
 
 def raw_accel_plot(sbs, signal, window_size, plot):
     '''
@@ -63,7 +63,7 @@ def mad_plot(sbs, x_mag, window_size, figure=None):
         
         count += 1
         
-def signal_vs_time(signal, time, sbs, window_size):
+def signal_vs_time(signal, sbs, window_size):
     if figure is None:
         figure = plt.figure(figsize=(8, 6))
     

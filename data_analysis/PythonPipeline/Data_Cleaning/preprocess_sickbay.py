@@ -47,7 +47,7 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
             epic_data['dts'] = pd.to_datetime(epic_data['Time_uniform'], format='%m/%d/%Y %I:%M:%S %p')
             epic_data['start_time'] = epic_data['dts'] - pd.Timedelta(lead_time, 'minutes')
             epic_data['end_time'] = epic_data['dts'] + pd.Timedelta(window_size - lead_time, 'minutes')
-
+            
             # Load heart rate data
             hr_file = os.path.join(patient_dir, f'{patient}_SickBayData.mat')
             if not os.path.isfile(hr_file):
@@ -58,25 +58,43 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
 
             # Convert datetime strings to datetime objects
             heart_rate_data['dts'] = pd.to_datetime([str(item) for item in time_strings], format='%m/%d/%Y %I:%M:%S %p')
-            print(heart_rate_data['dts'])
-                    
-            heart_rate_values = heart_rate_data['heart_rate'].flatten()  # Assuming 'HeartRate' is directly accessible in the dictionary
-            print(heart_rate_values)
-            print(len(heart_rate_values))
+            heart_rate_data['heart_rate'] = heart_rate_data['heart_rate'].flatten()  # Flatten heart rate array
+
+            # Create a DataFrame from the dictionary
+            heart_rate_df = pd.DataFrame({'dts': heart_rate_data['dts'], 'heart_rate': heart_rate_data['heart_rate']})
+
             sbs = []
             heart_rates = []
-            for _, row in epic_data.iterrows():
-                in_window = (heart_rate_data['dts'] > row['start_time']) & (heart_rate_data['dts'] < row['end_time'])
-                if np.any(in_window):
+            windows = []
+            count = 0
+            for i, row in epic_data.iterrows():
+                # Define the time window
+                start_time = row['start_time'] - pd.Timedelta(minutes=10)
+                end_time = row['end_time'] + pd.Timedelta(minutes=5)
+
+                # Filter heart rate data within the time window
+                in_window = heart_rate_df[(heart_rate_df['dts'] > start_time) & (heart_rate_df['dts'] < end_time)]
+
+                if not in_window.empty:  # Check if any heart rate values are found in the window
+                    count += 1
                     sbs.append(row['SBS'])
-                    heart_rate_in_window = heart_rate_values[in_window]  # Filter 'HeartRate' based on the condition
-                    heart_rates.append(heart_rate_in_window)  # Append all heart rate values in the window
+                    
+                    # Calculate the relative time within the window
+                    in_window['dts'] = in_window['dts'] - row['start_time']
+                    
+                    # Append heart rate values and corresponding relative time to the list
+                    heart_rates.append(in_window['heart_rate'].tolist())
+                    print(len(in_window['heart_rate']))
+                    windows.append(in_window)
                 else:
                     print('No matching heart rate data for SBS recording at ', row['dts'])
+            print(count)
 
-            # Save to file
+            # Further processing and saving...
+            
             sbs = np.array(sbs)
-            heart_rates = np.array(heart_rates)
+            print(sbs)
+            print(len(heart_rates[5]))
 
             filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size - lead_time}MIN.mat'
             save_file = os.path.join(patient_dir, filename)
