@@ -32,60 +32,51 @@ def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
     return df, col_names
 
 def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
-    '''
-    @param MATLAB SickBay Vitals Files, Created by SickBay_Extraction.py
-    Outputs MATLAB files concatenated with their respective SBS scores and heart rate values
-    '''
-    # search for patient directories in the data directory
+    # Iterate through patient directories
     for patient in os.listdir(data_dir):
-        # filter out non-directories
         patient_dir = os.path.join(data_dir, patient)
         if os.path.isdir(patient_dir):
             print('Processing:', patient)
 
-            print('Loading sickbay data')
-            sickbay_filepath = os.path.join(patient_dir, patient + '_SickBayData.mat')
-            if not os.path.isfile(sickbay_filepath):
-                raise FileNotFoundError(f'SickBay file not found: {sickbay_filepath}')
-            sickbay_data = loadmat(sickbay_filepath)
-            time = sickbay_data["time"]
-            hr = sickbay_data["heart_rate"]
-
-            print('Loading SBS data')
-            sbs_file = os.path.join(patient_dir, patient + '_SBS_Scores.xlsx')
+            # Load SBS data
+            sbs_file = os.path.join(patient_dir, f'{patient}_SBS_Scores.xlsx')
             if not os.path.isfile(sbs_file):
-                raise FileNotFoundError(f'Actigraphy file not found: {sbs_file}')
+                raise FileNotFoundError(f'EPIC file not found: {sbs_file}')
             epic_data, epic_names = load_from_excel(sbs_file)
-            epic_data.dropna(subset=['SBS'], inplace=True)  # drop rows with missing SBS scores
-            epic_data['dts'] = pd.to_datetime(epic_data['Time_uniform'], format='%m/%d/%Y %H:%M:%S %p')
-            # precompute start and end time for each SBS recording
+            epic_data.dropna(subset=['SBS'], inplace=True)
+            epic_data['dts'] = pd.to_datetime(epic_data['Time_uniform'], format='%m/%d/%Y %I:%M:%S %p')
             epic_data['start_time'] = epic_data['dts'] - pd.Timedelta(lead_time, 'minutes')
             epic_data['end_time'] = epic_data['dts'] + pd.Timedelta(window_size - lead_time, 'minutes')
 
-            print('Processing')
+            # Load heart rate data
+            hr_file = os.path.join(patient_dir, f'{patient}_SickBayData.mat')
+            if not os.path.isfile(hr_file):
+                raise FileNotFoundError(f'Heart rate file not found: {hr_file}')
+            heart_rate_data = loadmat(hr_file)
+            time_data = heart_rate_data['time'][0].flatten()  # Flatten nested array
+            time_strings = [item[0] for item in time_data]  # Extract datetime strings
+
+            # Convert datetime strings to datetime objects
+            heart_rate_data['dts'] = pd.to_datetime([str(item) for item in time_strings], format='%m/%d/%Y %I:%M:%S %p')
+            print(heart_rate_data['dts'])
+                    
+            heart_rate_values = heart_rate_data['heart_rate'].flatten()  # Assuming 'HeartRate' is directly accessible in the dictionary
+            print(heart_rate_values)
+            print(len(heart_rate_values))
             sbs = []
             heart_rates = []
-            for i, row in epic_data.iterrows():
-                # in_window = (time > pd.Timestamp(row['start_time'])) & (time < pd.Timestamp(row['end_time']))
-                # in_window = (pd.Series(time.flatten()) > pd.Timestamp(row['start_time'])) & (pd.Series(time.flatten()) < pd.Timestamp(row['end_time']))
-                start_time_np = np.datetime64(row['start_time'])
-                end_time_np = np.datetime64(row['end_time'])
-                in_window = (time > np.datetime64(row['start_time'])) & (time < np.datetime64(row['end_time']))
-                print('Dimensions of in_window:', in_window.shape)
-                print('Dimensions of hr:', hr.shape)
+            for _, row in epic_data.iterrows():
+                in_window = (heart_rate_data['dts'] > row['start_time']) & (heart_rate_data['dts'] < row['end_time'])
                 if np.any(in_window):
                     sbs.append(row['SBS'])
-                    heart_rate_in_window = hr[in_window.flatten()]
-                    print('Dimensions of heart_rate_in_window:', heart_rate_in_window.shape)
-                    heart_rates.append(np.mean(heart_rate_in_window))  # Append mean heart rate in the window
+                    heart_rate_in_window = heart_rate_values[in_window]  # Filter 'HeartRate' based on the condition
+                    heart_rates.append(heart_rate_in_window)  # Append all heart rate values in the window
                 else:
-                    print('No matching sickbay data for SBS recording at ', row['dts'])
+                    print('No matching heart rate data for SBS recording at ', row['dts'])
 
-            print('Save to file')
+            # Save to file
             sbs = np.array(sbs)
             heart_rates = np.array(heart_rates)
-            print(sbs.shape)
-            print(heart_rates.shape)
 
             filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size - lead_time}MIN.mat'
             save_file = os.path.join(patient_dir, filename)
