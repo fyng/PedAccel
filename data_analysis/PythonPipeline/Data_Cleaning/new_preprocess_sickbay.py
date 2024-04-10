@@ -16,6 +16,7 @@ blood_pressure_diastolic = []
 vitals_list = [heart_rate, SpO2, respiratory_rate, blood_pressure_systolic, blood_pressure_mean,blood_pressure_diastolic]
 names = ['heart_rate', 'SpO2', 'respiratory_rate', 'blood_pressure_systolic', 'blood_pressure_mean', 'blood_pressure_diastolic']
 
+
 def replace_nan_with_mean(lst):
     # Convert the list to a numpy array
     arr = np.array(lst)
@@ -41,13 +42,8 @@ def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
     col_names = df.columns.values.tolist()
     if 'SBS' not in col_names:
         raise ValueError('SBS column not found in the excel file')
-    if verbose:
-        print(df.head())
-        print(col_names)
     if to_numpy:
         array = df.to_numpy()
-        if verbose:
-            print(array.shape)
         return array, col_names
     return df, col_names
 
@@ -89,7 +85,6 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
             vitals_data_df = pd.DataFrame({'dts': vitals_data['dts'], 'heart_rate': vitals_data['heart_rate'], 'SpO2': vitals_data['SpO2'], 'respiratory_rate': vitals_data['respiratory_rate']
                                            , 'blood_pressure_systolic': vitals_data['blood_pressure_systolic'], 'blood_pressure_mean': vitals_data['blood_pressure_mean']
                                            , 'blood_pressure_diastolic': vitals_data['blood_pressure_diastolic']})
-            print(vitals_data_df.head(10))
             sbs = []
             
             for i, row in epic_data.iterrows():
@@ -99,7 +94,6 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
 
                 # Filter heart rate data within the time window
                 in_window = vitals_data_df[(vitals_data_df['dts'] >= start_time) & (vitals_data_df['dts'] <= end_time)]
-                print(in_window.head(5))
 
                 if not in_window.empty:  # Check if any data values are found in the window
                     sbs.append(row['SBS'])
@@ -113,26 +107,26 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
                         temp_list = in_window[column].tolist()
                         temp_list = replace_nan_with_mean(temp_list)
                         if temp_list:
-                            print(temp_list)
                             vital.append(temp_list)
                         index+=1
 
-            print(f'RR: {respiratory_rate}\n')
-            print(f'HR: {heart_rate}\n')
 
             # Convert sbs to a numpy array
             sbs = np.array(sbs)
             
             # Further processing and saving...
             print('Save to file')
-            if all(vitals_list):
-                    filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN.mat'
-                    save_file = os.path.join(patient_dir, filename)
-                    savemat(save_file, {'heart_rate': (heart_rate), 'SpO2': (SpO2),'respiratory_rate': (respiratory_rate),
-                        'blood_pressure_systolic': (blood_pressure_systolic),'blood_pressure_mean': (blood_pressure_mean),
-                        'blood_pressure_diastolic': (blood_pressure_diastolic),'sbs': sbs})
-            else:
-                    print("No data found for patient:", patient)
+            
+            # Remove empty lists from vitals_list and corresponding elements from names
+            vitals_list_filtered = [v for v, n in zip(vitals_list, names) if v]
+            print(vitals_list_filtered)
+            names_filtered = [n for v, n in zip(vitals_list, names) if v]
+
+
+            filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN.mat'
+            save_file = os.path.join(patient_dir, filename)
+            filtered_dict = {name: vitals for name, vitals in zip(names_filtered, vitals_list_filtered)}
+            savemat(save_file, filtered_dict, appendmat = False)
 
 
 if __name__ == '__main__':
