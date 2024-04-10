@@ -16,6 +16,25 @@ blood_pressure_diastolic = []
 vitals_list = [heart_rate, SpO2, respiratory_rate, blood_pressure_systolic, blood_pressure_mean,blood_pressure_diastolic]
 names = ['heart_rate', 'SpO2', 'respiratory_rate', 'blood_pressure_systolic', 'blood_pressure_mean', 'blood_pressure_diastolic']
 
+def replace_nan_with_mean(lst):
+    # Convert the list to a numpy array
+    arr = np.array(lst)
+
+    # Calculate the mean of non-NaN values
+    mean_val = np.nanmean(arr)
+
+    # Replace NaN values with the mean
+    arr[np.isnan(arr)] = mean_val
+
+    # Count non-NaN values
+    non_nan_count = np.sum(~np.isnan(arr))
+
+    # Check if non-NaN count is less than 50
+    if non_nan_count < 50:
+        return []  # Return an empty list
+    else:
+        return arr.tolist()  # Convert numpy array back to list
+
 def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
     # Load data from Excel file
     df = pd.read_excel(sbs_filepath, header=0)
@@ -92,8 +111,10 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
                     for vital in vitals_list:
                         column = names[index]
                         temp_list = in_window[column].tolist()
-                        temp_list = [x for x in temp_list if not math.isnan(x)]
-                        vital.append(temp_list)
+                        temp_list = replace_nan_with_mean(temp_list)
+                        if temp_list:
+                            print(temp_list)
+                            vital.append(temp_list)
                         index+=1
 
             print(f'RR: {respiratory_rate}\n')
