@@ -17,25 +17,6 @@ vitals_list = [heart_rate, SpO2, respiratory_rate, blood_pressure_systolic, bloo
 names = ['heart_rate', 'SpO2', 'respiratory_rate', 'blood_pressure_systolic', 'blood_pressure_mean', 'blood_pressure_diastolic']
 
 
-def replace_nan_with_mean(lst):
-    # Convert the list to a numpy array
-    arr = np.array(lst)
-
-    # Count non-NaN values
-    non_nan_count = np.sum(~np.isnan(arr))
-
-    # Calculate the mean of non-NaN values
-    mean_val = np.nanmean(arr)
-
-    # Replace NaN values with the mean
-    arr[np.isnan(arr)] = mean_val
-
-    # Check if non-NaN count is less than 50
-    if non_nan_count < 50:
-        return []  # Return an empty list
-    else:
-        return arr.tolist()  # Convert numpy array back to list
-
 def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
     # Load data from Excel file
     df = pd.read_excel(sbs_filepath, header=0)
@@ -86,15 +67,14 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
                                            , 'blood_pressure_systolic': vitals_data['blood_pressure_systolic'], 'blood_pressure_mean': vitals_data['blood_pressure_mean']
                                            , 'blood_pressure_diastolic': vitals_data['blood_pressure_diastolic']})
             sbs = []
-            
+
             for i, row in epic_data.iterrows():
                 # Define the time window
-                start_time = row['start_time'] - pd.Timedelta(minutes=lead_time)
-                end_time = row['end_time'] + pd.Timedelta(minutes=lead_time)
+                start_time = row['start_time']
+                end_time = row['end_time'] 
 
-                # Filter heart rate data within the time window
+                # Filter data within the time window
                 in_window = vitals_data_df[(vitals_data_df['dts'] >= start_time) & (vitals_data_df['dts'] <= end_time)]
-                print(f'In window data: {in_window.head(10)}')
 
                 if not in_window.empty:  # Check if any data values are found in the window
                     sbs.append(row['SBS'])
@@ -107,8 +87,6 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
                         column = names[index]
                         temp_list = in_window[column].tolist()
                         vital.append(temp_list)
-                        print(column)
-                        print(temp_list)
                         index+=1
 
 
@@ -126,7 +104,6 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
             filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN.mat'
             save_file = os.path.join(patient_dir, filename)
             filtered_dict = {name: vitals for name, vitals in zip(names_filtered, vitals_list_filtered)}
-            print(f"Blood pressure systolic: {filtered_dict['blood_pressure_systolic']}")
             filtered_dict['sbs'] = sbs
             savemat(save_file, filtered_dict, appendmat = False)
 
