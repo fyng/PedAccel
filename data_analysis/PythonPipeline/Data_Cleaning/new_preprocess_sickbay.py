@@ -21,14 +21,14 @@ def replace_nan_with_mean(lst):
     # Convert the list to a numpy array
     arr = np.array(lst)
 
+    # Count non-NaN values
+    non_nan_count = np.sum(~np.isnan(arr))
+
     # Calculate the mean of non-NaN values
     mean_val = np.nanmean(arr)
 
     # Replace NaN values with the mean
     arr[np.isnan(arr)] = mean_val
-
-    # Count non-NaN values
-    non_nan_count = np.sum(~np.isnan(arr))
 
     # Check if non-NaN count is less than 50
     if non_nan_count < 50:
@@ -94,6 +94,7 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
 
                 # Filter heart rate data within the time window
                 in_window = vitals_data_df[(vitals_data_df['dts'] >= start_time) & (vitals_data_df['dts'] <= end_time)]
+                print(f'In window data: {in_window.head(10)}')
 
                 if not in_window.empty:  # Check if any data values are found in the window
                     sbs.append(row['SBS'])
@@ -105,9 +106,9 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
                     for vital in vitals_list:
                         column = names[index]
                         temp_list = in_window[column].tolist()
-                        temp_list = replace_nan_with_mean(temp_list)
-                        if temp_list:
-                            vital.append(temp_list)
+                        vital.append(temp_list)
+                        print(column)
+                        print(temp_list)
                         index+=1
 
 
@@ -116,19 +117,19 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
             
             # Further processing and saving...
             print('Save to file')
-            
+
             # Remove empty lists from vitals_list and corresponding elements from names
             vitals_list_filtered = [v for v, n in zip(vitals_list, names) if v]
-            print(vitals_list_filtered)
             names_filtered = [n for v, n in zip(vitals_list, names) if v]
 
 
             filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN.mat'
             save_file = os.path.join(patient_dir, filename)
             filtered_dict = {name: vitals for name, vitals in zip(names_filtered, vitals_list_filtered)}
+            print(f"Blood pressure systolic: {filtered_dict['blood_pressure_systolic']}")
+            filtered_dict['sbs'] = sbs
             savemat(save_file, filtered_dict, appendmat = False)
 
-
 if __name__ == '__main__':
-    data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData'
+    data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData\PatientDataNew'
     load_segment_sickbay(data_dir)
