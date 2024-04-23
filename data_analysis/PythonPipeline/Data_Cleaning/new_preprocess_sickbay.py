@@ -13,9 +13,9 @@ blood_pressure_systolic = []
 blood_pressure_mean = []
 blood_pressure_diastolic = []
 
+
 vitals_list = [heart_rate, SpO2, respiratory_rate, blood_pressure_systolic, blood_pressure_mean,blood_pressure_diastolic]
 names = ['heart_rate', 'SpO2', 'respiratory_rate', 'blood_pressure_systolic', 'blood_pressure_mean', 'blood_pressure_diastolic']
-
 
 def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
     # Load data from Excel file
@@ -31,6 +31,10 @@ def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
 def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
     # Iterate through patient directories
     for patient in os.listdir(data_dir):
+        for i in vitals_list:
+            i.clear()  # Clears each list in-place
+
+
         patient_dir = os.path.join(data_dir, patient)
         if os.path.isdir(patient_dir):
             print('Processing:', patient)
@@ -75,7 +79,7 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
 
                 # Filter data within the time window
                 in_window = vitals_data_df[(vitals_data_df['dts'] >= start_time) & (vitals_data_df['dts'] <= end_time)]
-
+        
                 if not in_window.empty:  # Check if any data values are found in the window
                     sbs.append(row['SBS'])
 
@@ -88,7 +92,6 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
                         temp_list = in_window[column].tolist()
                         vital.append(temp_list)
                         index+=1
-
 
             # Convert sbs to a numpy array
             sbs = np.array(sbs)
@@ -104,9 +107,36 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
             filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN.mat'
             save_file = os.path.join(patient_dir, filename)
             filtered_dict = {name: vitals for name, vitals in zip(names_filtered, vitals_list_filtered)}
-            filtered_dict['sbs'] = sbs
+
+            #Filtering so that data is saved properly
+            for i in range(len(vitals_list)):
+                name = names[i]
+                cur_list = filtered_dict[name] #cur_list is 2D
+                for j in range(len(cur_list)):
+                    cur_list[j] = np.array(cur_list[j]) #convert each sublist to an np array
+
+                    #sampling vitals in data has glitches where extra or not enough data is recorded.
+                    # To compensate, we remove or fill values: 
+                    print(f'before sampling: {len(cur_list[j])}')
+                    expected_samples = window_size * 30 #time(min) * 60 sec/min * sr(1sample/2 sec)
+                    if(len(cur_list[j]) > expected_samples):
+                        cut = len(cur_list[j])-expected_samples
+                        cur_list[j] = cur_list[j][cut:]
+
+                    elif(len(cur_list[j]) < expected_samples): #linear extrapolation to make all subarrays the same length
+                        print('here')
+                        # Calculate the slope using the last two elements
+                        slope = (cur_list[j][-1] - cur_list[j][-2]) / (len(cur_list[j]) - 1)
+                        # Extrapolate additional values
+                        for k in range(len(cur_list[j]), expected_samples):
+                            cur_list[j] = np.append(cur_list[j], (cur_list[j][-1] + slope))
+                        cur_list[j][-1] = -10 #flag the last extrapolated value so that we know where extrapolation occurs
+                    print(f'after sampling: {len(cur_list[j])}')
+                cur_list = np.array(cur_list, np.dtype('float16')) #save List of np arrays as an np array
+
+            filtered_dict['sbs'] = np.array(sbs)
             savemat(save_file, filtered_dict, appendmat = False)
 
 if __name__ == '__main__':
-    data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData\PatientDataNew'
+    data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData'
     load_segment_sickbay(data_dir)
