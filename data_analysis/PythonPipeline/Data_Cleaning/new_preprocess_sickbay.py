@@ -112,8 +112,8 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
             filtered_dict = {name: vitals for name, vitals in zip(names_filtered, vitals_list_filtered)}
 
             #Filtering so that data is saved properly
-            for i in range(len(vitals_list)):
-                name = names[i]
+            for i in range(len(vitals_list_filtered)):
+                name = names_filtered[i]
                 cur_list = filtered_dict[name] #cur_list is 2D
                 for j in range(len(cur_list)):
                     cur_list[j] = np.array(cur_list[j]) #convert each sublist to an np array
@@ -121,6 +121,7 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
                     #sampling vitals in data has glitches where extra or not enough data is recorded.
                     # To compensate, we remove or fill values: 
                     print(f'before sampling: {len(cur_list[j])}')
+                    
                     expected_samples = window_size * 30 #time(min) * 60 sec/min * sr(1sample/2 sec)
                     if(len(cur_list[j]) > expected_samples):
                         cut = len(cur_list[j])-expected_samples
@@ -134,7 +135,9 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
                         for k in range(len(cur_list[j]), expected_samples):
                             cur_list[j] = np.append(cur_list[j], (cur_list[j][-1] + slope))
                         cur_list[j][-1] = -10 #flag the last extrapolated value so that we know where extrapolation occurs
+
                     print(f'after sampling: {len(cur_list[j])}')
+
                 cur_list = np.array(cur_list, np.dtype('float16')) #save List of np arrays as an np array
 
             filtered_dict['sbs'] = np.array(sbs)
