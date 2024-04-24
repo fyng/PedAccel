@@ -17,6 +17,9 @@ blood_pressure_diastolic = []
 vitals_list = [heart_rate, SpO2, respiratory_rate, blood_pressure_systolic, blood_pressure_mean,blood_pressure_diastolic]
 names = ['heart_rate', 'SpO2', 'respiratory_rate', 'blood_pressure_systolic', 'blood_pressure_mean', 'blood_pressure_diastolic']
 
+def interpolate():
+    return 0
+
 def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
     # Load data from Excel file
     df = pd.read_excel(sbs_filepath, header=0)
@@ -138,5 +141,6 @@ def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
             savemat(save_file, filtered_dict, appendmat = False)
 
 if __name__ == '__main__':
-    data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData'
+    # data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData'
+    data_dir = r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData'
     load_segment_sickbay(data_dir)
