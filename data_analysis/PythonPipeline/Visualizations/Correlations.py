@@ -7,8 +7,7 @@ import pandas as pd
 import numpy as np
 from scipy.io import loadmat
 from scipy.stats import pearsonr
-from pygt3x.reader import FileReader 
-
+from pygt3x.reader import FileReader
 import preprocess_sickbay
 import os
 import sys
