@@ -27,7 +27,7 @@ def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
         return array, col_names
     return df, col_names
 
-def load_segment_sickbay(data_dir, window_size=10, lead_time=5):
+def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
     # Iterate through patient directories
     for patient in os.listdir(data_dir):
         for i in vitals_list:
