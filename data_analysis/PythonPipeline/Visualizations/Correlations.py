@@ -183,27 +183,9 @@ def pearson_corr_vitals_sbs(signal, sbs, signal_name, lead_time, slice_size_min)
     features_array = np.array(features_list).reshape(-1, 359)
     df_features = pd.DataFrame(features_array)
     
-    # List to store correlation coefficients for each feature
-    CCoeff = []
-
-    # Iterate over each feature column in df_features
-    for col in df_features.columns:
-        # Check if both sbs_list and column data have lengths of at least 2
-        if len(sbs_list) >= 2 and len(df_features[col]) >= 2:
-            # Compute correlation between SBS scores and current feature
-            corr, _ = pearsonr(sbs_list, df_features[col])
-            # Append absolute value of correlation coefficient to CCoeff list
-            CCoeff.append(abs(corr))
-        else:
-            # Append NaN if either list has insufficient length for correlation calculation
-            CCoeff.append(np.nan)
-
-    # Print correlation coefficients
-    for i, corr in enumerate(CCoeff):
-        print(f'Correlation between SBS and Feature {i+1}: {corr}')
-    
     #Pearson Correlation Coefficient
     my_dict = {}
+    print(df_features.columns)
     columns = df_features.columns
     for i in columns:
         y = sbs_list
@@ -219,7 +201,7 @@ def pearson_corr_vitals_sbs(signal, sbs, signal_name, lead_time, slice_size_min)
 
     # Retrieve N features with best correlation coefficient  
     # Initialize N
-    N = 10
+    N = 5
     
     # N largest values in dictionary
     # Using sorted() + itemgetter() + items()
@@ -230,7 +212,7 @@ def pearson_corr_vitals_sbs(signal, sbs, signal_name, lead_time, slice_size_min)
     x = list(res.values())
     
     # Figure Size
-    fig, ax = plt.subplots(figsize=(16, 9))
+    fig, ax = plt.subplots(figsize=(10, 5))
     
     # Horizontal Bar Plot
     ax.barh(y, x)
@@ -257,14 +239,15 @@ def pearson_corr_vitals_sbs(signal, sbs, signal_name, lead_time, slice_size_min)
     ax.set_xlim([0.8 * min(x), 1.1 * max(x)])
     
     # Add Plot Title
-    ax.set_title(f'Correlation between top features and SBS for {signal_name}', loc='left')
+    ax.set_title(f'Correlation between top features and SBS for\n {signal_name}_{lead_time}MIN_{slice_size_min - lead_time}MIN)',
+                            loc ='left', )
     
     # Show Plot
     plt.show()
     
     # Return the top N correlated features
     return "The top N value pairs are " + str(res)
-        
+
 def vitals_anova(data_dir, lead_time, slice_size_min):
     '''
     Calculates ANOVA between the 6 SBS groups and vitals data for each patient.
