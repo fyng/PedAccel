@@ -167,13 +167,11 @@ def load_and_segment_data_mat(data_dir, window_size=15, lead_time=10):
             # Flatten the nested arrays
             start_time_flat = vitals_data['start_time'].flatten()
             end_time_flat = vitals_data['end_time'].flatten()
-            print(start_time_flat)
 
             # Convert the flattened arrays to Timestamp objects
             start_time = [pd.Timestamp(str(ts[0])) for ts in start_time_flat]
             end_time = [pd.Timestamp(str(ts[0])) for ts in end_time_flat]
-            print(start_time)
-            
+
             epic_data = pd.DataFrame({
                 'SBS': SBS,
                 'start_time': start_time,
