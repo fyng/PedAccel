@@ -38,10 +38,14 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
             print('Processing:', patient)
 
             # Load SBS data
-            sbs_file = os.path.join(patient_dir, f'{patient}_SBS_Scores.xlsx')
+            sbs_file = os.path.join(patient_dir, f'{patient}_SBS_Scores_Validated.xlsx')
             if not os.path.isfile(sbs_file):
                 raise FileNotFoundError(f'EPIC file not found: {sbs_file}')
             epic_data, epic_names = load_from_excel(sbs_file)
+            
+            # Statement to exclude SBS scores without stimulation
+            epic_data = epic_data[epic_data['Stim?'] == 'Y']
+            
             epic_data.dropna(subset=['SBS'], inplace=True)
             epic_data['dts'] = pd.to_datetime(epic_data['Time_uniform'], format='mixed')
             epic_data['start_time'] = epic_data['dts'] - pd.Timedelta(lead_time, 'minutes')
@@ -69,17 +73,23 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
                                            , 'blood_pressure_systolic': vitals_data['blood_pressure_systolic'], 'blood_pressure_mean': vitals_data['blood_pressure_mean']
                                            , 'blood_pressure_diastolic': vitals_data['blood_pressure_diastolic']})
             sbs = []
+            
+            #Time Variables
+            start_time = []
+            end_time = []
 
             for i, row in epic_data.iterrows():
                 # Define the time window
-                start_time = row['start_time']
-                end_time = row['end_time'] 
+                start_time_cur = row['start_time']
+                end_time_cur = row['end_time'] 
 
                 # Filter data within the time window
-                in_window = vitals_data_df[(vitals_data_df['dts'] >= start_time) & (vitals_data_df['dts'] <= end_time)]
+                in_window = vitals_data_df[(vitals_data_df['dts'] >= start_time_cur) & (vitals_data_df['dts'] <= end_time_cur)]
         
                 if not in_window.empty:  # Check if any data values are found in the window
                     sbs.append(row['SBS'])
+                    start_time.append(start_time_cur)
+                    end_time.append(end_time_cur)
 
                     # Calculate the relative time within the window
                     in_window['dts'] = in_window['dts'] - row['start_time']
@@ -90,9 +100,15 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
                         temp_list = in_window[column].tolist()
                         vital.append(temp_list)
                         index+=1
+            # ed
+            start_time_str = [ts.isoformat() for ts in start_time]
+            end_time_str = [ts.isoformat() for ts in end_time]
 
             # Convert sbs to a numpy array
             sbs = np.array(sbs)
+            start_time = pd.to_datetime(start_time)
+            end_time = pd.to_datetime(end_time)
+            # print(start_time)
             
             # Further processing and saving...
             print('Save to file')
@@ -101,7 +117,7 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
             vitals_list_filtered = [v for v, n in zip(vitals_list, names) if v]
             names_filtered = [n for v, n in zip(vitals_list, names) if v]
 
-            filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN.mat'
+            filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN_Validated_Stim.mat'
             save_file = os.path.join(patient_dir, filename)
             filtered_dict = {name: vitals for name, vitals in zip(names_filtered, vitals_list_filtered)}
 
@@ -129,6 +145,9 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
                 cur_list = np.array(cur_list, np.dtype('float16')) #save List of np arrays as an np array
 
             filtered_dict['sbs'] = np.array(sbs)
+            filtered_dict['start_time'] = np.array(start_time_str, dtype=object)
+            filtered_dict['end_time'] = np.array(end_time_str, dtype=object)
+            print(filtered_dict['start_time'])
             savemat(save_file, filtered_dict, appendmat = False)
 
 if __name__ == '__main__':

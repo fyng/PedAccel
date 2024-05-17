@@ -79,7 +79,6 @@ print("The top N value pairs are " + str(res))
 #_________________________________________________________________________________
 #Plot a histogram
 
-
 y = list(res.keys())
 x = list(res.values()) #price
  
