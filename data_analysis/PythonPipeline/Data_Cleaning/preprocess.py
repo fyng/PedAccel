@@ -191,20 +191,6 @@ def load_and_segment_data_mat(data_dir, window_size=15, lead_time=10):
                 'end_time': end_time
             })
         
-            # # SBS Scores from Excel File
-            # print('Loading SBS data')
-            # sbs_file = os.path.join(patient_dir, patient + '_SBS_Scores_Validated.xlsx')
-            # if not os.path.isfile(sbs_file):
-            #     raise FileNotFoundError(f'Actigraphy file not found: {sbs_file}')
-            # epic_data, epic_names = load_from_excel(sbs_file)
-            # # Del: epic_data.dropna(subset=['SBS'], inplace = True) # drop rows with missing SBS scores
-            # print(epic_data.shape)
-            # print(epic_names)
-            # epic_data['dts'] = pd.to_datetime(epic_data['Time_uniform'], format='%m/%d/%Y %H:%M:%S %p')
-            # # precompute start and end time for each SBS recording
-            # epic_data['start_time'] = epic_data['dts'] - pd.Timedelta(lead_time, 'minutes')
-            # epic_data['end_time'] = epic_data['dts'] + pd.Timedelta(window_size - lead_time, 'minutes')
-
             print('Processing')
             windows = []
             sbs = []
