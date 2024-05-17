@@ -58,16 +58,7 @@ def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
 
     return df, col_names
 
-def load_csv_data():
-    # would we ever use this?
-    pass
-
-def load_mat_data():
-    # would we ever use this?
-    pass
-
-
-def load_and_segment_data(data_dir, window_size=10, lead_time=10):
+def load_and_segment_data_excel(data_dir, window_size=10, lead_time=10):
     '''
     Load actigraphy and EPIC data from a directory and segment it into time windows.
 
@@ -181,8 +172,6 @@ def load_and_segment_data_mat(data_dir, window_size=15, lead_time=10):
             # Convert the flattened arrays to Timestamp objects
             start_time = [pd.Timestamp(str(ts[0])) for ts in start_time_flat]
             end_time = [pd.Timestamp(str(ts[0])) for ts in end_time_flat]
-            # start_time = [pd.Timestamp(ts) for ts in vitals_data['start_time']]
-            # end_time = [pd.Timestamp(ts) for ts in vitals_data['end_time']]
             print(start_time)
             
             epic_data = pd.DataFrame({
@@ -217,14 +206,23 @@ def load_and_segment_data_mat(data_dir, window_size=15, lead_time=10):
             sbs = np.array(sbs)
             print(x_mag.shape)
             print(sbs.shape)
+            
+            # Vitals Data Preprocessed:
+            hr = vitals_data['heart_rate']
+            SpO2 = vitals_data['SpO2']
+            rr = vitals_data['respiratory_rate']
+            bps = vitals_data['blood_pressure_systolic']
+            bpm = vitals_data['blood_pressure_mean']
+            bpd = vitals_data['blood_pressure_diastolic']
 
-            filename = f'{patient}_{lead_time}MIN_{window_size - lead_time}MIN_Validated.mat'
-            save_file = os.path.join(patient_dir, filename)
-            savemat(save_file, dict([('x_mag', x_mag), ('sbs', sbs)]))
+            # filename = f'{patient}_{lead_time}MIN_{window_size - lead_time}MIN_Validated.mat'
+            save_file = os.path.join(patient_dir, vitals_sbs_file)
+            savemat(save_file, dict([('x_mag', x_mag), ('heart_rate', hr), 
+                                     ('SpO2', SpO2), ('respiratory_rate', rr), ('blood_pressure_systolic', bps), 
+                                     ('blood_pressure_mean', bpm), ('blood_pressure_diastolic', bpd), ('sbs', sbs)]))
 
 if __name__ == '__main__':
     data_dir = r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData'
     # data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData'
     # load_and_segment_data(data_dir)
     load_and_segment_data_mat(data_dir)
-            
