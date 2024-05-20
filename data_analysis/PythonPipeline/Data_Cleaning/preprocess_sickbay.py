@@ -44,7 +44,12 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
             epic_data, epic_names = load_from_excel(sbs_file)
             
             # Statement to exclude SBS scores without stimulation
-            epic_data = epic_data[epic_data['Stim?'] == 'Y']
+            # epic_data = epic_data[epic_data['Stim?'] == 'Y']
+            
+            # Statement for Default SBS Score Processing (Score 4)
+            for i in range(len(epic_data['SBS'])):
+                if epic_data['Default?'][i] == 'Y':
+                    epic_data['SBS'][i] = 4
             
             epic_data.dropna(subset=['SBS'], inplace=True)
             epic_data['dts'] = pd.to_datetime(epic_data['Time_uniform'], format='mixed')
@@ -117,7 +122,7 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
             vitals_list_filtered = [v for v, n in zip(vitals_list, names) if v]
             names_filtered = [n for v, n in zip(vitals_list, names) if v]
 
-            filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN_Validated_Stim.mat'
+            filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN_Validated_Default.mat'
             save_file = os.path.join(patient_dir, filename)
             filtered_dict = {name: vitals for name, vitals in zip(names_filtered, vitals_list_filtered)}
 
