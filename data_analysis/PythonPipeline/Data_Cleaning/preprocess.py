@@ -11,6 +11,7 @@ import os
 from scipy.io import savemat
 from functools import reduce
 from scipy.io import loadmat
+import preprocess_sickbay
 
 def load_gt3x_data(gt3x_filepath, to_numpy=False, verbose=False):
     '''
@@ -72,9 +73,9 @@ def load_and_segment_data_excel(data_dir, window_size=10, lead_time=10):
     |_Patient11_AccelData.gt3x
     |_Patient11__SBS_Scores.xlsx
     '''
-    # search for patient directories in the data directory
+    # Search for patient directories in the data directory
     for patient in os.listdir(data_dir):
-        # filter out non-directories
+        # Filter out non-directories
         patient_dir = os.path.join(data_dir, patient)
         if os.path.isdir(patient_dir):
             print('Processing:', patient)
@@ -158,7 +159,7 @@ def load_and_segment_data_mat(data_dir, window_size=15, lead_time=10):
             
             # SBS Scores from MAT File
             print('Loading SBS data')
-            vitals_sbs_file = os.path.join(patient_dir, f'{patient}_SICKBAY_{lead_time}MIN_{window_size - lead_time}MIN_Validated_Stim.mat')
+            vitals_sbs_file = os.path.join(patient_dir, f'{patient}_SICKBAY_{lead_time}MIN_{window_size - lead_time}MIN_Validated_Default.mat')
             
             # Implement error handling here if file does not exist...
             vitals_data = loadmat(vitals_sbs_file)
@@ -213,7 +214,6 @@ def load_and_segment_data_mat(data_dir, window_size=15, lead_time=10):
             bpm = vitals_data['blood_pressure_mean']
             bpd = vitals_data['blood_pressure_diastolic']
 
-            # filename = f'{patient}_{lead_time}MIN_{window_size - lead_time}MIN_Validated.mat'
             save_file = os.path.join(patient_dir, vitals_sbs_file)
             savemat(save_file, dict([('x_mag', x_mag), ('heart_rate', hr), 
                                      ('SpO2', SpO2), ('respiratory_rate', rr), ('blood_pressure_systolic', bps), 

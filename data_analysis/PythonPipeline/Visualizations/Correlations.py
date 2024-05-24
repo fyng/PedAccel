@@ -8,7 +8,7 @@ import numpy as np
 from scipy.io import loadmat
 from scipy.stats import pearsonr
 from pygt3x.reader import FileReader
-import Filtering
+import data_analysis.PythonPipeline.Data_Cleaning.Filtering as Filtering
 import os
 import sys
 from scipy.stats import f_oneway, levene

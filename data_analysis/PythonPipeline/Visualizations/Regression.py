@@ -10,7 +10,7 @@ import pandas as pd
 import numpy as np
 from sklearn import linear_model
 from scipy.io import loadmat
-import Filtering
+import data_analysis.PythonPipeline.Data_Cleaning.Filtering as Filtering
 
 #%%
 # Load Data
