@@ -36,6 +36,7 @@ def training(model, X, y, samples_weight, max_iter):
     learning_rate = 0.0001
     epsilon = 1e-7
     criterion = torch.nn.BCELoss()
+    l1_mag = 0.00
     opt_j     = optim.Adam(model.parameters(), lr=learning_rate)
     y_train = torch.Tensor(y)
     X_train = X
@@ -50,7 +51,7 @@ def training(model, X, y, samples_weight, max_iter):
         # X_data = X_train
         # y_data = y_train
         outputs = model(X_data)
-        loss_c = criterion(outputs, y_data) 
+        loss_c = criterion(outputs, y_data)# + l1_mag*torch.abs(model.w.weight).sum()
         loss_criterion.append(loss_c.detach().item())
         loss = loss_c
         loss.backward() # Computes the gradient of the given tensor w.r.t. the weights/bias
@@ -59,7 +60,7 @@ def training(model, X, y, samples_weight, max_iter):
             break
         old_loss = loss.detach().item()
         
-    return loss_criterion, loss_sparsity, model.w.weight.detach().numpy()
+    return loss_criterion, loss_sparsity, model.w.weight.clone().detach().numpy()
 
 # %%
 for repeat in range(10):
@@ -70,13 +71,17 @@ for repeat in range(10):
     Kappa = []
     y_true = []
     y_pred = []
+    X_wave = []
     importances = []
+    test_ids = []
 
     for fold in range(10):
         data_folder = f'cv{repeat}/fold{fold}.mat'
         X_train = (loadmat(data_folder)['X_train'])
         y_train = (loadmat(data_folder)['y_train']) 
         X_test = (loadmat(data_folder)['X_test'])  
+        x_wave = (loadmat(data_folder)['X_test_wave']) 
+        test_id = (loadmat(data_folder)['test_ids']) 
         y_test = (loadmat(data_folder)['y_test'])
         y_test = y_test.sum(axis = 1)
 
@@ -96,8 +101,13 @@ for repeat in range(10):
             #Y_hat = (cpu(y_j_hat).data.numpy()> ordinal_thres).cumprod(axis = 1).sum(axis = 1)
             y_te = (y_prob_fixed.detach().numpy() > 0.5).cumprod(axis = 1).sum(axis = 1)
             y_te[y_te < 0] = 0
-            f1 = metrics.f1_score(y_test, y_te, average='macro')
-            accuracy = metrics.accuracy_score(y_test, y_te)
+
+            # class_sample_count = np.array([len(np.where(y_test==t)[0]) for t in np.unique(y_test)])
+            # weight = 1. / class_sample_count
+            # samples_weight = np.array([weight[t] for t in y_test])
+
+            f1 = metrics.f1_score(y_test, y_te, average='weighted')
+            accuracy = metrics.balanced_accuracy_score(y_test, y_te)
             kappa = metrics.cohen_kappa_score(y_test, y_te)
             sensitivity = metrics.recall_score(y_test, y_te, average='macro')
             specs = []
@@ -109,14 +119,17 @@ for repeat in range(10):
             Y_PRED = y_te
             y_true += np.squeeze(Y).tolist()
             y_pred += np.squeeze(Y_PRED).tolist()
+            test_ids += np.squeeze(test_id).tolist()
         
+        X_wave.append(x_wave)
         Acc.append(accuracy)
         Kappa.append(kappa)
         Sens.append(sensitivity)
         Spec.append(specificity)
         F1.append(f1)
 
+    X_wave = np.concatenate(X_wave, axis = 0)
     folder = "results/"
     filename = folder + (f"cv{repeat}.mat")
-    savemat(filename,  {'Acc':Acc, 'Spec':Spec, 'Sens':Sens, 'Kappa':Kappa, 'F1':F1, 'y_true':y_true, 'y_pred':y_pred, 'importance':np.vstack(importances).mean(axis = 0)})
+    savemat(filename,  {'Acc':Acc, 'Spec':Spec, 'Sens':Sens, 'Kappa':Kappa, 'F1':F1, 'y_true':y_true, 'y_pred':y_pred, 'importance':np.vstack(importances).mean(axis = 0), 'X_wave':X_wave, 'test_ids': test_ids})
     # %%
