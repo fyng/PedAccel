@@ -1,10 +1,9 @@
-
-# Note: I'm making edits here, combining both preprocessing scripts
-
 '''
 Acceleration and Vitals Preprocessing Code
-
+|_ Loads Vitals and Accelerometry Data from GT3X and Excel Files and concatenates them with SBS Scoring Files.
+|_ Outputs PatientX_SICKBAY_XMIN_YMIN.mat file
 '''
+
 # Import Modules
 import pandas as pd
 import numpy as np
@@ -16,7 +15,6 @@ from scipy.io import loadmat
 import Filtering
 
 # Define Variables
-
 heart_rate = []
 SpO2 = []
 respiratory_rate = []
@@ -38,7 +36,7 @@ def load_from_excel(sbs_filepath, to_numpy=False, verbose=False):
         return array, col_names
     return df, col_names
 
-def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
+def load_segment_sickbay(data_dir, window_size=15, lead_time=10, tag = ""):
     '''
     Processes Sickbay Vitals MATLAB file and SBS Score Excel File
     * {patient}_SickBayData.mat (obtained from SickBayExtraction.py)
@@ -52,7 +50,7 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
 
         patient_dir = os.path.join(data_dir, patient)
         if os.path.isdir(patient_dir):
-            print('Processing:', patient)
+            print('Processing Sickbay:', patient)
 
             # Load SBS data
             sbs_file = os.path.join(patient_dir, f'{patient}_SBS_Scores.xlsx')
@@ -139,7 +137,7 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
             vitals_list_filtered = [v for v, n in zip(vitals_list, names) if v]
             names_filtered = [n for v, n in zip(vitals_list, names) if v]
 
-            filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN.mat'
+            filename = f'{patient}_SICKBAY_{lead_time}MIN_{window_size-lead_time}MIN{tag}.mat'
             save_file = os.path.join(patient_dir, filename)
             filtered_dict = {name: vitals for name, vitals in zip(names_filtered, vitals_list_filtered)}
 
@@ -158,18 +156,17 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
                         cut = len(cur_list[j])-expected_samples
                         cur_list[j] = cur_list[j][cut:]
 
-                    elif(len(cur_list[j]) < expected_samples): #linear extrapolation to make all subarrays the same length
+                    elif(len(cur_list[j]) < expected_samples): # Linear extrapolation to make all subarrays the same length
                         # Append NaN values to the end of the list
                         num_missing_samples = expected_samples - len(cur_list[j])
                         nan_values = np.full(num_missing_samples, np.nan)
                         cur_list[j] = np.concatenate((cur_list[j], nan_values))
                         print(f'after sampling: {len(cur_list[j])}')
-                cur_list = np.array(cur_list, np.dtype('float16')) #save List of np arrays as an np array
+                cur_list = np.array(cur_list, np.dtype('float16')) # Save List of np arrays as an np array
             
             filtered_dict['sbs'] = np.array(sbs)
             # print(filtered_dict['start_time'])
             # savemat(save_file, filtered_dict, appendmat = False)
-            
             
             # ADD IN Filtering Code Here...
             temp_hr = filtered_dict['heart_rate']
@@ -189,18 +186,20 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
             vitals_names_final = ['hr','rr','spo2','bpm','bps','bpd']
             temp_vitals = [temp_hr,temp_rr, temp_SpO2,temp_bpm,temp_bps,temp_bpd] 
             
-            flag_list = [0] * (int)(sr * 60 * window_size) #generate a list to insert in place of invalid data, 
-            #this list serves as a flag for a window to ignore in the box plot function
-
-            for j in range(len(vitals_list_final)): #go through every vitals metric
+            # Generate a list to insert in place of invalid data, 
+            # This list serves as a flag for a window to ignore in the box plot function
+            flag_list = [0] * (int)(sr * 60 * window_size) 
+            
+            # Iterate through each SBS score for every vitals metric, assess validity of data
+            for j in range(len(vitals_list_final)):
                 print(f'original {vitals_names_final[j]} vitals array shape: {np.array(temp_vitals[j]).shape} ')
-                for i in range(len(vitals_SBS)): #go through every SBS score for each vitals metric
-                    if (Filtering.checkVitals(temp_vitals[j][i], window_size, vitals_names_final[j])): #check the data in a single window
-                        vitals_list_final[j].append(temp_vitals[j][i]) #append that single window data to the 2D hr,rr,spo2,bpm,bps,bpd arrays if that window's data is valid
+                for i in range(len(vitals_SBS)):
+                    if (Filtering.checkVitals(temp_vitals[j][i], window_size, vitals_names_final[j])): # Check the data in a single window
+                        vitals_list_final[j].append(temp_vitals[j][i]) # Append that single window data to the 2D hr, rr, spo2, bpm, bps, bpd arrays if that window's data is valid
                     else:
-                        vitals_list_final[j].append(flag_list) #append an array of zeros for window number i for the jth vitals metric if the data is invalid(i.e. too many NaN points)
+                        vitals_list_final[j].append(flag_list) # Append an array of zeros for window number i for the jth vitals metric if the data is invalid (i.e. too many NaN points)
                         print(f'{vitals_names_final[j]} SBS index {i} has insufficient data, zeros appended in place') 
-                print(f'final {vitals_names_final[j]} vitals array shape: {np.array(vitals_list_final[j]).shape}') #should be the number of SBS scores by the number of samples in a window
+                print(f'final {vitals_names_final[j]} vitals array shape: {np.array(vitals_list_final[j]).shape}') # The number of SBS scores by the number of samples in a window
             
             vitals_list_filtered_final = [v for v, n in zip(vitals_list_final, vitals_names_final) if v]
             names_filtered_final = [n for v, n in zip(vitals_list_final, vitals_names_final) if v]
@@ -210,6 +209,7 @@ def load_segment_sickbay(data_dir, window_size=15, lead_time=10):
             filtered_dict_final['end_time'] = np.array(end_time_str, dtype=object)
             filtered_dict_final['sbs'] = np.array(vitals_SBS)
             savemat(save_file, filtered_dict_final, appendmat = False)
+            return
 
 def load_gt3x_data(gt3x_filepath, to_numpy=False, verbose=False):
     '''
@@ -230,6 +230,94 @@ def load_gt3x_data(gt3x_filepath, to_numpy=False, verbose=False):
         return array, col_names
 
     return df, col_names
+
+def load_and_segment_data_mat(data_dir, window_size=15, lead_time=10, tag = ""):
+    '''
+    Load actigraphy and vitals waveform MAT file from a directory and segment it into time windows. 
+    PatientX
+    |_PatientX_AccelData.gt3x
+    |_PatientX_SickBayData.mat
+    '''
+    load_segment_sickbay(data_dir, window_size, lead_time, tag)
+    # search for patient directories in the data directory
+    for patient in os.listdir(data_dir):
+        # filter out non-directories
+        patient_dir = os.path.join(data_dir, patient)
+        if os.path.isdir(patient_dir):
+            print('Processing:', patient)
+
+            print('Loading actigraphy data')
+            actigraphy_filepath = os.path.join(patient_dir, patient + '_AccelData.gt3x')
+            if not os.path.isfile(actigraphy_filepath):
+                raise FileNotFoundError(f'Actigraphy file not found: {actigraphy_filepath}')
+            acti_data, acti_names = load_gt3x_data(actigraphy_filepath)
+            acti_data['mag'] = np.linalg.norm(acti_data[['X', 'Y', 'Z']].values, axis=1)
+            acti_data['dts'] = pd.to_datetime(acti_data['Timestamp'], unit='s')
+            print(acti_data.shape)
+            print(acti_names)
+            
+            # SBS Scores from MAT File
+            print('Loading SBS data')
+            vitals_sbs_file = os.path.join(patient_dir, f'{patient}_SICKBAY_{lead_time}MIN_{window_size - lead_time}MIN{tag}.mat')
+            
+            # Implement error handling here if file does not exist...
+            vitals_data = loadmat(vitals_sbs_file)
+            # print(vitals_data)
+            SBS = vitals_data['sbs'].flatten()
+            # Flatten the nested arrays
+            start_time_flat = vitals_data['start_time'].flatten()
+            end_time_flat = vitals_data['end_time'].flatten()
+
+            # Convert the flattened arrays to Timestamp objects
+            start_time = [pd.Timestamp(str(ts[0])) for ts in start_time_flat]
+            end_time = [pd.Timestamp(str(ts[0])) for ts in end_time_flat]
+
+            epic_data = pd.DataFrame({
+                'SBS': SBS,
+                'start_time': start_time,
+                'end_time': end_time
+            })
+        
+            print('Processing')
+            windows = []
+            sbs = []
+            for i, row in epic_data.iterrows():
+                # don't like the for-loop, but its not a big bottleneck for the number of SBS recordings we are getting right now. 
+
+                in_window = acti_data[(acti_data['dts'] > row['start_time']) & (acti_data['dts'] < row['end_time'])].loc[:, ['dts', 'mag']]
+                in_window.rename(columns={'mag': f'mag_{i}'}, inplace=True)
+                if in_window.shape[0] > 0:
+                    sbs.append(row['SBS'])
+                    in_window['dts'] = in_window['dts'] - row['start_time']
+                    windows.append(in_window)
+                else:
+                    print('No matching accelerometry data for SBS recording at ', row['dts'])
+
+            print('Save to file')
+            windows_merged = reduce(lambda  left,right: pd.merge(left,right,on=['dts'], how='outer'), windows)
+            windows_merged.drop('dts', axis=1, inplace=True)
+            windows_merged = windows_merged.apply(pd.to_numeric, downcast='float') #float32 is enough
+            windows_merged.interpolate(axis=1, inplace=True) #fill na with linear interpolation
+
+            x_mag = np.transpose(windows_merged.to_numpy())
+            assert not np.isnan(np.sum(x_mag)) # fast nan check
+            sbs = np.array(sbs)
+            print(x_mag.shape)
+            print(sbs.shape)
+
+            # Vitals Data Preprocessed:
+            hr = vitals_data['hr']
+            SpO2 = vitals_data['spo2']
+            rr = vitals_data['rr']
+            bps = vitals_data['bps']
+            bpm = vitals_data['bpm']
+            bpd = vitals_data['bpd']
+            # final_file = os.path.join(patient_dir, f'{patient}_FULLDATA_{lead_time}MIN_{window_size - lead_time}MIN{tag}.mat')
+
+            save_file = os.path.join(patient_dir, vitals_sbs_file)
+            savemat(save_file, dict([('x_mag', x_mag), ('heart_rate', hr), 
+                                     ('SpO2', SpO2), ('respiratory_rate', rr), ('blood_pressure_systolic', bps), 
+                                     ('blood_pressure_mean', bpm), ('blood_pressure_diastolic', bpd), ('sbs', sbs)]))
 
 def load_and_segment_data_excel(data_dir, window_size=10, lead_time=10):
     '''
@@ -307,93 +395,19 @@ def load_and_segment_data_excel(data_dir, window_size=10, lead_time=10):
             save_file = os.path.join(patient_dir, filename)
             savemat(save_file, dict([('x_mag', x_mag), ('sbs', sbs)]))
 
-
-def load_and_segment_data_mat(data_dir, window_size=15, lead_time=10):
-    '''
-    Load actigraphy and vitals waveform MAT file from a directory and segment it into time windows. 
-    '''
-    load_segment_sickbay(data_dir, window_size, lead_time)
-    # search for patient directories in the data directory
-    for patient in os.listdir(data_dir):
-        # filter out non-directories
-        patient_dir = os.path.join(data_dir, patient)
-        if os.path.isdir(patient_dir):
-            print('Processing:', patient)
-
-            print('Loading actigraphy data')
-            actigraphy_filepath = os.path.join(patient_dir, patient + '_AccelData.gt3x')
-            if not os.path.isfile(actigraphy_filepath):
-                raise FileNotFoundError(f'Actigraphy file not found: {actigraphy_filepath}')
-            acti_data, acti_names = load_gt3x_data(actigraphy_filepath)
-            acti_data['mag'] = np.linalg.norm(acti_data[['X', 'Y', 'Z']].values, axis=1)
-            acti_data['dts'] = pd.to_datetime(acti_data['Timestamp'], unit='s')
-            print(acti_data.shape)
-            print(acti_names)
-            
-            # SBS Scores from MAT File
-            print('Loading SBS data')
-            vitals_sbs_file = os.path.join(patient_dir, f'{patient}_SICKBAY_{lead_time}MIN_{window_size - lead_time}MIN.mat')
-            
-            # Implement error handling here if file does not exist...
-            vitals_data = loadmat(vitals_sbs_file)
-            # print(vitals_data)
-            SBS = vitals_data['sbs'].flatten()
-            # Flatten the nested arrays
-            start_time_flat = vitals_data['start_time'].flatten()
-            end_time_flat = vitals_data['end_time'].flatten()
-
-            # Convert the flattened arrays to Timestamp objects
-            start_time = [pd.Timestamp(str(ts[0])) for ts in start_time_flat]
-            end_time = [pd.Timestamp(str(ts[0])) for ts in end_time_flat]
-
-            epic_data = pd.DataFrame({
-                'SBS': SBS,
-                'start_time': start_time,
-                'end_time': end_time
-            })
-        
-            print('Processing')
-            windows = []
-            sbs = []
-            for i, row in epic_data.iterrows():
-                # don't like the for-loop, but its not a big bottleneck for the number of SBS recordings we are getting right now. 
-
-                in_window = acti_data[(acti_data['dts'] > row['start_time']) & (acti_data['dts'] < row['end_time'])].loc[:, ['dts', 'mag']]
-                in_window.rename(columns={'mag': f'mag_{i}'}, inplace=True)
-                if in_window.shape[0] > 0:
-                    sbs.append(row['SBS'])
-                    in_window['dts'] = in_window['dts'] - row['start_time']
-                    windows.append(in_window)
-                else:
-                    print('No matching accelerometry data for SBS recording at ', row['dts'])
-
-            print('Save to file')
-            windows_merged = reduce(lambda  left,right: pd.merge(left,right,on=['dts'], how='outer'), windows)
-            windows_merged.drop('dts', axis=1, inplace=True)
-            windows_merged = windows_merged.apply(pd.to_numeric, downcast='float') #float32 is enough
-            windows_merged.interpolate(axis=1, inplace=True) #fill na with linear interpolation
-
-            x_mag = np.transpose(windows_merged.to_numpy())
-            assert not np.isnan(np.sum(x_mag)) # fast nan check
-            sbs = np.array(sbs)
-            print(x_mag.shape)
-            print(sbs.shape)
-            
-            # Vitals Data Preprocessed:
-            hr = vitals_data['heart_rate']
-            SpO2 = vitals_data['SpO2']
-            rr = vitals_data['respiratory_rate']
-            bps = vitals_data['blood_pressure_systolic']
-            bpm = vitals_data['blood_pressure_mean']
-            bpd = vitals_data['blood_pressure_diastolic']
-
-            save_file = os.path.join(patient_dir, vitals_sbs_file)
-            savemat(save_file, dict([('x_mag', x_mag), ('heart_rate', hr), 
-                                     ('SpO2', SpO2), ('respiratory_rate', rr), ('blood_pressure_systolic', bps), 
-                                     ('blood_pressure_mean', bpm), ('blood_pressure_diastolic', bpd), ('sbs', sbs)]))
-
 if __name__ == '__main__':
+    '''
+    Set the following:
+    |_ data_dir: current working directory
+    |_ window_size_in: total window used in analysis
+    |_ lead_time_in: length of analysis before SBS score
+    |_ tag: string tag of mat file
+        E.g., _Validated, _Nurse, _WSTIM, etc.
+    '''
     data_dir = r'C:\Users\sidha\OneDrive\Sid Stuff\PROJECTS\iMEDS Design Team\Data Analysis\PedAccel\data_analysis\PythonPipeline\PatientData'
     # data_dir = r'C:\Users\jakes\Documents\DT 6 Analysis\PythonCode\PedAccel\data_analysis\PythonPipeline\PatientData'
     # load_and_segment_data(data_dir)
-    load_and_segment_data_mat(data_dir, 15, 15)
+    window_size_in = 15
+    lead_time_in = 15
+    tag = ""
+    load_and_segment_data_mat(data_dir, window_size_in, lead_time_in, tag)
