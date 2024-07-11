@@ -25,7 +25,7 @@ def load_sickbay():
         print(f'Processing: Patient {patient_num}')
 
         filename = f'{patient_mrn}_SickBayData.csv'
-        patient_dir = r"S:\Sedation_monitoring\Sickbay_extract\Extract_1\Study57_Tag123_EventList"
+        patient_dir = r"S:\Sedation_monitoring\Sickbay_extract\Extract_0.5Hz\Study57_Tag123_EventList"
 
         sickbay_data_path = os.path.join(patient_dir, filename)
 
@@ -41,10 +41,12 @@ def load_sickbay():
         data_dict = {
             'time': df['Time_uniform'].values,
             'heart_rate': df['PARM_HR'].values,
-            'SpO2': df['PARM_SPO2_1'].values,
+            'SpO2': df['PARM_SPO2_M'].values,
             'respiratory_rate': df['PARM_RESP_RATE'].values,
+            #'blood_pressure_systolic': [np.nan],
             'blood_pressure_systolic': df['PARM_NBP_SYS'].values,
             'blood_pressure_mean': df['PARM_NBP_MEAN'].values,
+            # 'blood_pressure_diastolic': [np.nan]
             'blood_pressure_diastolic': df['PARM_NBP_DIA'].values
         }
 
